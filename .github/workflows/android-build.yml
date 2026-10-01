@@ -1,0 +1,60 @@
+name: Android Public Build
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/trigger/android-build'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install dependencies
+        run: npm install
+      - name: Validate Expo bundle
+        run: npx expo export --platform android --output-dir /tmp/nobin-export
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android --clean --no-install
+      - name: Disable generated debug signing for release artifact
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/build.gradle')
+          s=p.read_text()
+          marker='release {'
+          i=s.find(marker)
+          if i < 0: raise SystemExit('release block not found')
+          j=s.find('signingConfig signingConfigs.debug', i)
+          if j >= 0:
+              s=s[:j]+'signingConfig null'+s[j+len('signingConfig signingConfigs.debug'):]
+          p.write_text(s)
+          PY
+      - name: Build unsigned release APK and AAB
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleRelease bundleRelease --stacktrace --no-daemon
+      - name: Collect outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-output
+          find android/app/build/outputs -type f \( -name '*.apk' -o -name '*.aab' \) -print -exec cp {} release-output/ \;
+          ls -lah release-output
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nobin-android-unsigned
+          path: release-output
+          if-no-files-found: error
+          retention-days: 7

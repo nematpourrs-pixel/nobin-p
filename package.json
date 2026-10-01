@@ -1,0 +1,17 @@
+{
+  "name": "nobin-android-build",
+  "version": "2.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {"start":"expo start","typecheck":"tsc --noEmit"},
+  "dependencies": {
+    "expo": "~57.0.0",
+    "expo-router": "~57.0.21",
+    "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.3",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-worklets": "0.13.0"
+  },
+  "devDependencies": {"@types/react":"^19.1.12","typescript":"^5.9.2"}
+}
