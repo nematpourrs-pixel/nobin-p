@@ -2,9 +2,12 @@ export type Audience='FEMALE'|'MALE'|'ALL';
 export type ProfileGender='FEMALE'|'MALE'|'UNSPECIFIED';
 export type Appearance='AUTO'|'ROSE'|'TEAL'|'NEUTRAL';
 export type Density='COMFORTABLE'|'COMPACT';
-export type LocalPrefs={profileGender:ProfileGender;audience:Audience;appearance:Appearance;density:Density;preferredCity:string;showAssistant:boolean};
+export type LocalPrefs={profileGender:ProfileGender;audience:Audience;appearance:Appearance;density:Density;preferredProvince:string;preferredCity:string;showAssistant:boolean};
 
-export const defaultPrefs:LocalPrefs={profileGender:'UNSPECIFIED',audience:'ALL',appearance:'AUTO',density:'COMFORTABLE',preferredCity:'',showAssistant:true};
+export const defaultPrefs:LocalPrefs={profileGender:'UNSPECIFIED',audience:'ALL',appearance:'AUTO',density:'COMFORTABLE',preferredProvince:'',preferredCity:'',showAssistant:true};
+export function effectiveAudience(p:Pick<LocalPrefs,'profileGender'|'audience'>):Audience{return p.profileGender==='FEMALE'?'FEMALE':p.profileGender==='MALE'?'MALE':p.audience}
+export function normalizePrefs(p:LocalPrefs):LocalPrefs{const audience=effectiveAudience(p);return {...p,audience}}
+export function genderAllows(serviceGender:any,audience:Audience){const g=String(serviceGender||'ALL').toUpperCase();return audience==='ALL'||g==='ALL'||g===audience}
 export const palettes={
   FEMALE:{bg:'#FFF9FB',card:'#FFFFFF',text:'#241A20',muted:'#776A72',accent:'#A13F6C',accentSoft:'#F7E7EF',line:'#EEDFE6',success:'#247456',warning:'#956718',danger:'#B13E4D',ink:'#382A31'},
   MALE:{bg:'#F5F8F9',card:'#FFFFFF',text:'#18262A',muted:'#647278',accent:'#2A626B',accentSoft:'#E2EEF0',line:'#DCE6E8',success:'#237356',warning:'#93671B',danger:'#A9414D',ink:'#24373B'},
