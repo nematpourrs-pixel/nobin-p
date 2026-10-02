@@ -1,0 +1,7 @@
+const fa=new Intl.NumberFormat('fa-IR');
+export const faNum=(n:number)=>fa.format(n);
+export function jalaliDate(value:string|Date,withWeekday=false){const d=value instanceof Date?value:new Date(String(value).replace(' ','T'));if(Number.isNaN(d.getTime()))return String(value);return new Intl.DateTimeFormat('fa-IR-u-ca-persian',{weekday:withWeekday?'long':undefined,year:'numeric',month:'long',day:'numeric'}).format(d)}
+export function jalaliShort(value:string|Date){const d=value instanceof Date?value:new Date(String(value).replace(' ','T'));if(Number.isNaN(d.getTime()))return String(value);return new Intl.DateTimeFormat('fa-IR-u-ca-persian',{day:'numeric',month:'short'}).format(d)}
+export function faTime(value:string|Date){const d=value instanceof Date?value:new Date(String(value).replace(' ','T'));if(Number.isNaN(d.getTime()))return '';return new Intl.DateTimeFormat('fa-IR',{hour:'2-digit',minute:'2-digit'}).format(d)}
+export function jalaliDateTime(value:string|Date){return `${jalaliDate(value,true)}، ساعت ${faTime(value)}`}
+export function bookingDays(count=7){return Array.from({length:count},(_,i)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+i);return{key:[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),label:i===0?'امروز':i===1?'فردا':new Intl.DateTimeFormat('fa-IR',{weekday:'long'}).format(d),date:jalaliShort(d)}})}
