@@ -10,8 +10,10 @@ export default function Layout(){
     <Stack.Screen name="index" options={{headerShown:false,animation:'none',gestureEnabled:false}}/>
     <Stack.Screen name="onboarding" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="search" options={{headerShown:false,animation:'none',gestureEnabled:false}}/>
+    <Stack.Screen name="blog" options={{headerShown:false,animation:'none',gestureEnabled:false}}/>
     <Stack.Screen name="bookings" options={{headerShown:false,animation:'none',gestureEnabled:false}}/>
     <Stack.Screen name="profile" options={{headerShown:false,animation:'none',gestureEnabled:false}}/>
+    <Stack.Screen name="location-filter" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="preferences" options={{title:'شخصی‌سازی',animation:'fade'}}/>
     <Stack.Screen name="login" options={{title:'ورود به نوبین',animation:'fade'}}/>
     <Stack.Screen name="assistant" options={{title:'دستیار نوبین',animation:'fade'}}/>
