@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../src/api';
-import { paletteFor, savePrefs as _x } from '../src/prefs';
+import { paletteFor } from '../src/prefs';
 import { savePrefs } from '../src/session';
 import type { Audience, ProfileGender } from '../src/prefs';
 
