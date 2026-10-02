@@ -3,19 +3,19 @@
     "name": "نوبین",
     "slug": "nobin",
     "scheme": "nobin",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": ["expo-router"],
     "android": {
       "package": "ir.nobin.app",
-      "versionCode": 20001,
+      "versionCode": 20002,
       "permissions": ["POST_NOTIFICATIONS"],
       "softwareKeyboardLayoutMode": "resize",
       "usesCleartextTraffic": false,
-      "adaptiveIcon": {"backgroundColor": "#FFF8FB"}
+      "adaptiveIcon": {"backgroundColor": "#F6F8F9"}
     },
-    "web": {"bundler":"metro"},
-    "extra": {"router":{"origin":false}}
+    "web": {"bundler": "metro"},
+    "extra": {"router": {"origin": false}}
   }
 }
