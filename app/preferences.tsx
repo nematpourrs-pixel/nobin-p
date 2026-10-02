@@ -1,0 +1,28 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { api } from '../src/api';
+import { appearanceLabel, audienceLongLabel, defaultPrefs, paletteFor, type Appearance, type Audience, type Density, type LocalPrefs } from '../src/prefs';
+import { getPrefs, getToken, savePrefs } from '../src/session';
+import { NText } from '../src/ui';
+
+export default function Preferences(){
+  const[prefs,setPrefs]=useState<LocalPrefs>(defaultPrefs);const[saved,setSaved]=useState(false);
+  useEffect(()=>{getPrefs().then(x=>x&&setPrefs(x))},[]);
+  const t=paletteFor(prefs.audience,prefs.appearance);const s=useMemo(()=>styles(t),[prefs.audience,prefs.appearance]);
+  const patch=(x:Partial<LocalPrefs>)=>{setSaved(false);setPrefs(p=>({...p,...x}))};
+  const save=async()=>{await savePrefs(prefs);if(await getToken())try{await api('/v1/me/preferences',{method:'PATCH',body:JSON.stringify({profile_gender:'UNSPECIFIED',service_audience:prefs.audience})})}catch{}setSaved(true)};
+  return <SafeAreaView edges={['bottom']} style={s.root}><ScrollView contentContainerStyle={s.wrap} keyboardShouldPersistTaps="handled">
+    <View><NText weight="bold" style={s.h1}>تجربه نوبین را تنظیم کن</NText><NText style={s.p}>این تنظیمات هر زمان قابل تغییر است و روی پیشنهادها، رنگ‌ها و چیدمان خانه اثر می‌گذارد.</NText></View>
+    <Section title="نوع خدمات" sub="پیشنهادها و دسته‌بندی‌ها"><View style={s.segment}>{(['FEMALE','MALE','ALL'] as Audience[]).map(a=><Choice key={a} label={audienceLongLabel(a)} on={prefs.audience===a} onPress={()=>patch({audience:a})} t={t}/>)}</View></Section>
+    <Section title="رنگ و حال‌وهوای اپ" sub="می‌تواند مستقل از نوع خدمات باشد"><View style={s.grid}>{(['AUTO','ROSE','TEAL','NEUTRAL'] as Appearance[]).map(a=><Choice key={a} label={appearanceLabel(a)} on={prefs.appearance===a} onPress={()=>patch({appearance:a})} t={t}/>)}</View></Section>
+    <Section title="شهر ترجیحی" sub="برای جستجو و پیشنهادهای بعدی"><View style={[s.inputWrap,{borderColor:t.line}]}><Ionicons name="location-outline" size={19} color={t.muted}/><TextInput value={prefs.preferredCity} onChangeText={v=>patch({preferredCity:v})} placeholder="مثلاً تهران" placeholderTextColor={t.muted} style={s.input}/></View></Section>
+    <Section title="چیدمان خانه" sub="کارت‌های خلوت‌تر یا فشرده‌تر"><View style={s.segment}>{(['COMFORTABLE','COMPACT'] as Density[]).map(d=><Choice key={d} label={d==='COMFORTABLE'?'راحت':'فشرده'} on={prefs.density===d} onPress={()=>patch({density:d})} t={t}/>)}</View></Section>
+    <Section title="دستیار هوشمند" sub="نمایش کارت دستیار در صفحه خانه"><TouchableOpacity activeOpacity={.7} onPress={()=>patch({showAssistant:!prefs.showAssistant})} style={s.toggleRow}><View style={[s.switch,{backgroundColor:prefs.showAssistant?t.accent:t.line}]}><View style={[s.knob,{alignSelf:prefs.showAssistant?'flex-end':'flex-start'}]}/></View><NText weight="medium" style={{color:t.text}}>{prefs.showAssistant?'نمایش داده شود':'پنهان باشد'}</NText></TouchableOpacity></Section>
+    <TouchableOpacity activeOpacity={.75} style={s.save} onPress={save}><NText weight="bold" style={s.saveT}>{saved?'ذخیره شد ✓':'ذخیره شخصی‌سازی'}</NText></TouchableOpacity>
+  </ScrollView></SafeAreaView>
+}
+function Section({title,sub,children}:any){return <View style={{gap:10}}><View><NText weight="semi" style={{fontSize:16,textAlign:'right'}}>{title}</NText><NText style={{fontSize:12.5,textAlign:'right',opacity:.65,marginTop:2}}>{sub}</NText></View>{children}</View>}
+function Choice({label,on,onPress,t}:any){return <TouchableOpacity activeOpacity={.72} onPress={onPress} style={[{borderWidth:1,borderColor:t.line,backgroundColor:t.card,borderRadius:15,paddingHorizontal:12,paddingVertical:10},on&&{borderColor:t.accent,backgroundColor:t.accentSoft}]}><NText weight={on?'semi':'medium'} style={{fontSize:12.5,color:on?t.accent:t.text,textAlign:'center'}}>{label}</NText></TouchableOpacity>}
+const styles=(t:any)=>StyleSheet.create({root:{flex:1,backgroundColor:t.bg},wrap:{padding:18,paddingBottom:36,gap:26},h1:{fontSize:24,lineHeight:36,textAlign:'right',color:t.text},p:{fontSize:13.5,lineHeight:23,textAlign:'right',color:t.muted,marginTop:4},segment:{flexDirection:'row-reverse',gap:8,flexWrap:'wrap'},grid:{flexDirection:'row-reverse',gap:8,flexWrap:'wrap'},inputWrap:{height:48,borderRadius:15,borderWidth:1,backgroundColor:t.card,flexDirection:'row-reverse',alignItems:'center',paddingHorizontal:13,gap:8},input:{flex:1,textAlign:'right',fontFamily:'Vazirmatn_400Regular',fontSize:14,color:t.text},toggleRow:{height:48,borderRadius:15,borderWidth:1,borderColor:t.line,backgroundColor:t.card,paddingHorizontal:13,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},switch:{width:44,height:24,borderRadius:12,padding:3,justifyContent:'center'},knob:{width:18,height:18,borderRadius:9,backgroundColor:'#fff'},save:{backgroundColor:t.accent,borderRadius:16,padding:15,alignItems:'center'},saveT:{color:'#fff',fontSize:14.5}})
