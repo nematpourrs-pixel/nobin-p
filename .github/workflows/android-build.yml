@@ -22,6 +22,8 @@ jobs:
           java-version: '21'
       - name: Install dependencies
         run: npm install
+      - name: Typecheck
+        run: npm run typecheck
       - name: Validate Expo bundle
         run: npx expo export --platform android --output-dir /tmp/nobin-export
       - name: Prebuild Android
