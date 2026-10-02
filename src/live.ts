@@ -10,9 +10,12 @@ export function salonCard(b:any):Salon{
     rating:Number(b.average_rating||0),
     reviews:Number(b.rating_count||0),
     price:'مشاهده خدمات',
-    next:'مشاهده زمان‌های آزاد',
+    next:'زمان‌های آزاد',
     badges:b.verified?['تأییدشده']:[],
-    services:[]
+    services:[],
+    coverUrl:b.cover_url||b.logo_url||undefined,
+    logoUrl:b.logo_url||undefined,
+    gender:b.gender||'ALL'
   };
 }
 export function salonDetail(b:any):Salon{
