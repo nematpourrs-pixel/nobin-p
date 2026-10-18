@@ -1,6 +1,6 @@
 {
   "name": "nobin-android-build",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
