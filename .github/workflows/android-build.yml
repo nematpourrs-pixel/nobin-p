@@ -23,6 +23,54 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Install dependencies
         run: npm install
+      - name: Generate release launcher icons
+        shell: bash
+        run: |
+          python3 -m pip install --quiet pillow
+          mkdir -p assets
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+
+          W=1024
+          cream=(247,242,232,255); teal=(0,82,70,255); teal2=(4,112,94,255); gold=(207,161,67,255); white=(255,255,255,255)
+          def draw_logo(bg=True):
+              im=Image.new("RGBA",(W,W),cream if bg else (0,0,0,0))
+              d=ImageDraw.Draw(im)
+              # calendar shell
+              box=(150,145,874,878)
+              d.rounded_rectangle(box, radius=150, fill=teal)
+              inner=(195,285,829,825)
+              d.rounded_rectangle(inner, radius=95, fill=cream if bg else white)
+              # binder rings
+              for x in (345,680):
+                  d.rounded_rectangle((x-42,72,x+42,235),radius=42,fill=gold)
+                  d.rounded_rectangle((x-27,87,x+27,220),radius=27,fill=(232,193,99,255))
+              # female abstract profile (left)
+              d.ellipse((250,390,530,680),fill=teal2)
+              d.pieslice((286,414,550,685),70,285,fill=cream if bg else white)
+              d.polygon([(286,518),(232,676),(386,745),(447,647),(375,613)],fill=teal)
+              d.polygon([(335,405),(455,465),(372,655),(333,626),(388,520),(302,470)],fill=gold)
+              # male abstract profile (right)
+              d.ellipse((500,390,780,680),fill=teal)
+              d.pieslice((468,420,742,688),250,110,fill=cream if bg else white)
+              d.polygon([(681,565),(772,602),(724,700),(598,708),(560,635)],fill=teal)
+              # beard cue
+              d.arc((590,500,750,680),20,150,fill=gold,width=18)
+              # center leaf / sparkle
+              d.polygon([(512,685),(548,742),(512,802),(476,742)],fill=gold)
+              d.polygon([(512,710),(530,742),(512,770),(494,742)],fill=(239,209,132,255))
+              return im
+          draw_logo(True).save("assets/icon.png",optimize=True)
+          fg=draw_logo(False)
+          # keep foreground away from mask edges
+          canvas=Image.new("RGBA",(W,W),(0,0,0,0))
+          fg=fg.resize((760,760),Image.Resampling.LANCZOS)
+          canvas.alpha_composite(fg,((W-760)//2,(W-760)//2))
+          canvas.save("assets/adaptive-icon.png",optimize=True)
+          PY
+          file assets/icon.png assets/adaptive-icon.png
+
       - name: Typecheck
         run: npm run typecheck
       - name: Validate Expo bundle
