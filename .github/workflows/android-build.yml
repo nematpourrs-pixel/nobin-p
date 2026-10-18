@@ -90,11 +90,22 @@ jobs:
           j=s.find('signingConfig signingConfigs.debug', i)
           if j >= 0:
               s=s[:j]+'signingConfig null'+s[j+len('signingConfig signingConfigs.debug'):]
+          # Native debug-symbol metadata is not needed for the CafeBazaar release and
+          # can consume several GB while merging React Native ABIs.
+          rel=s.find('release {')
+          if rel >= 0 and "debugSymbolLevel 'none'" not in s[rel:rel+1200]:
+              brace=s.find('{', rel)+1
+              s=s[:brace]+"\n            ndk { debugSymbolLevel 'none' }"+s[brace:]
           p.write_text(s)
           PY
       - name: Build unsigned release APK and AAB
         working-directory: android
-        run: chmod +x gradlew && ./gradlew assembleRelease bundleRelease --stacktrace --no-daemon
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8 -Dorg.gradle.workers.max=2"
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace --no-daemon
+          ./gradlew bundleRelease --stacktrace --no-daemon
       - name: Collect outputs
         shell: bash
         run: |
