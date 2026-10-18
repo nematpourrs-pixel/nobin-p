@@ -3,7 +3,7 @@
     "name": "نوبین",
     "slug": "nobin",
     "scheme": "nobin",
-    "version": "2.1.2",
+    "version": "2.1.3",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -11,7 +11,7 @@
     ],
     "android": {
       "package": "ir.nobin.app",
-      "versionCode": 20102,
+      "versionCode": 20103,
       "permissions": [],
       "softwareKeyboardLayoutMode": "resize",
       "usesCleartextTraffic": false,
@@ -27,7 +27,9 @@
     "extra": {
       "router": {
         "origin": false
-      }
+      },
+      "market": "CAFE_BAZAAR",
+      "commercialMode": "FREE"
     },
     "icon": "./assets/icon.png"
   }
