@@ -36,8 +36,7 @@ export default function AdminDashboard(){
   <View style={s.menu}>
    <Menu t={t} icon="headset-outline" title="پشتیبانی کاربران" sub="مشاهده و پاسخ مستقیم به تمام گفتگوها" onPress={()=>router.push('/admin-support')}/>
    <Menu t={t} icon="newspaper-outline" title="بلاگ و پیام هدفمند" sub="ارسال سراسری، استانی، شهری یا اختصاصی" onPress={()=>router.push('/admin-posts')}/>
-   <Menu t={t} icon="pulse-outline" title="وضعیت فنی سیستم" sub={diag.db?'MySQL '+diag.db:'اطلاعات فنی'} onPress={load}/>
-   <Menu t={t} icon="sync-outline" title="تنظیم مجدد وب‌هوک بله" sub="اتصال ربات بله به API فعلی" onPress={setWebhook}/>
+   <Menu t={t} icon="settings-outline" title="تنظیمات و سلامت سیستم" sub={diag.db?'MySQL '+diag.db+' · تنظیمات فنی و بله':'تنظیمات فنی و بله'} onPress={()=>router.push('/admin-system')}/>
   </View>
  </ScrollView></SafeAreaView>
 }
