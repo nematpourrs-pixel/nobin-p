@@ -32,5 +32,8 @@ export default function Layout(){
     <Stack.Screen name="review" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="follows" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-support" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="admin-dashboard" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="admin-entity" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="admin-posts" options={{headerShown:false,animation:'fade'}}/>
   </Stack></SafeAreaProvider>
 }
