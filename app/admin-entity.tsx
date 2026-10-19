@@ -16,7 +16,7 @@ const schemas:any={
  bookings:{title:'رزروها',main:'reference',sub:['status','starts_at'],fields:[['business_id','شناسه کسب‌وکار'],['customer_id','شناسه مشتری'],['staff_id','شناسه پرسنل'],['starts_at','شروع'],['ends_at','پایان'],['status','وضعیت'],['source','منبع'],['total_amount','مبلغ'],['deposit_amount','بیعانه'],['notes','یادداشت']]},
  reviews:{title:'نظرات',main:'comment',sub:['rating','status'],fields:[['business_id','شناسه کسب‌وکار'],['booking_id','شناسه رزرو'],['user_id','شناسه کاربر'],['rating','امتیاز'],['comment','نظر'],['status','وضعیت']]},
  campaigns:{title:'کمپین‌ها',main:'title',sub:['type','status'],fields:[['business_id','شناسه کسب‌وکار'],['title','عنوان'],['type','نوع'],['starts_at','شروع'],['ends_at','پایان'],['budget','بودجه'],['status','وضعیت'],['config','تنظیمات JSON']]},
- notifications:{title:'اعلان‌ها',main:'title',sub:['channel','status'],fields:[['user_id','شناسه کاربر'],['channel','کانال'],['title','عنوان'],['body','متن'],['status','وضعیت'],['send_after','زمان ارسال'],['sent_at','زمان ارسال‌شده']]},
+ notifications:{title:'اعلان‌ها',main:'title',sub:['channel','status'],fields:[['user_id','شناسه کاربر'],['channel','کانال'],['title','عنوان'],['body','متن'],['status','وضعیت'],['send_after','زمان ارسال'],['sent_at','زمان ارسال‌شده']]},\n business_badges:{title:'نشان‌های کسب‌وکار',main:'title',sub:['business_id','active'],fields:[['business_id','شناسه کسب‌وکار'],['slug','شناسه نشان'],['title','عنوان نشان'],['description','توضیحات'],['active','فعال (0/1)']]},
 };
 
 export default function AdminEntity(){
