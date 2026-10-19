@@ -16,7 +16,7 @@ const modules=[
  ['bookings','رزروها','calendar-outline','bookings'],
  ['reviews','نظرات','star-outline','reviews'],
  ['campaigns','کمپین‌ها','megaphone-outline','campaigns'],
- ['notifications','اعلان‌ها','notifications-outline','notifications'],
+ ['notifications','اعلان‌ها','notifications-outline','notifications'],\n ['business_badges','نشان‌ها','ribbon-outline','business_badges'],
 ] as const;
 
 export default function AdminDashboard(){
