@@ -18,6 +18,19 @@ const modules=[
  ['campaigns','کمپین‌ها','megaphone-outline','campaigns'],
  ['notifications','اعلان‌ها','notifications-outline','notifications'],
  ['business_badges','نشان‌ها','ribbon-outline','business_badges'],
+ ['branches','شعب','git-branch-outline','branches'],
+ ['service_categories','دسته خدمات','grid-outline','service_categories'],
+ ['resources','منابع/اتاق/صندلی','cube-outline','resources'],
+ ['inventory_items','موجودی اقلام','layers-outline','inventory_items'],
+ ['inventory_movements','گردش موجودی','swap-horizontal-outline','inventory_movements'],
+ ['payments','پرداخت‌ها','card-outline','payments'],
+ ['settlements','تسویه‌ها','cash-outline','settlements'],
+ ['membership_plans','پلن‌ها','pricetags-outline','membership_plans'],
+ ['business_subscriptions','اشتراک کسب‌وکار','receipt-outline','business_subscriptions'],
+ ['events_workshops','رویداد/کارگاه','school-outline','events_workshops'],
+ ['business_media','رسانه کسب‌وکار','images-outline','business_media'],
+ ['ledger_entries','دفتر مالی','book-outline','ledger_entries'],
+ ['business_members','اعضای کسب‌وکار','people-circle-outline','business_members'],
 ] as const;
 
 export default function AdminDashboard(){
