@@ -1,22 +1,27 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, findNodeHandle, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../src/api';
 import { jalaliShort } from '../src/dateFa';
 import { defaultPrefs, paletteFor, type LocalPrefs } from '../src/prefs';
 import { getPrefs } from '../src/session';
 import { NText } from '../src/ui';
+import { TimeInput } from '../src/TimeInput';
 
 type StaffRow={id:number;name:string;title?:string;service_ids?:number[];active?:number};
 type ShiftRange={start:string;end:string};
 const roles=['آرایشگر','رنگ‌کار','ناخن‌کار','میکاپ‌آرتیست','پوست و فیشیال','اپراتور لیزر','پزشک','پرستار','ماساژور','متخصص مستقل','سایر تخصص‌ها'];
 const week=[['شنبه',6],['یکشنبه',0],['دوشنبه',1],['سه‌شنبه',2],['چهارشنبه',3],['پنجشنبه',4],['جمعه',5]] as const;
+const asciiDigits=(v:string)=>v.replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString()).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+const moneyDigits=(v:string)=>asciiDigits(v).replace(/\D/g,'');
+const moneyInput=(v:any)=>{const d=moneyDigits(String(v??''));return d?d.replace(/\B(?=(\d{3})+(?!\d))/g,','):''};
+const moneyValue=(v:any)=>Number(moneyDigits(String(v??''))||0);
 export default function BusinessManage(){
  const p=useLocalSearchParams<{businessId:string}>();const bid=Number(p.businessId||0);
  const[prefs,setPrefs]=useState<LocalPrefs>(defaultPrefs);const[b,setB]=useState<any>(null);const[step,setStep]=useState(1);const[loading,setLoading]=useState(true);
- const scrollRef=useRef<ScrollView>(null);const focusBottom=()=>setTimeout(()=>scrollRef.current?.scrollToEnd({animated:true}),160);
+ const scrollRef=useRef<any>(null);
  const[staffName,setStaffName]=useState('');const[staffRole,setStaffRole]=useState('آرایشگر');const[customRole,setCustomRole]=useState('');
  const[service,setService]=useState('');const[price,setPrice]=useState('');const[duration,setDuration]=useState('60');const[selectedStaffIds,setSelectedStaffIds]=useState<number[]>([]);
  const[scheduleStaff,setScheduleStaff]=useState<number|null>(null);const[scheduleDay,setScheduleDay]=useState<number>(6);const[shiftRanges,setShiftRanges]=useState<ShiftRange[]>([{start:'09:00',end:'20:00'}]);
