@@ -9,7 +9,7 @@ export function TimeInput({label,value,onChange,t}:{label:string;value:string;on
     <TouchableOpacity activeOpacity={.72} onPress={()=>setOpen(true)} style={{height:50,borderWidth:1,borderColor:t.line,backgroundColor:t.card,borderRadius:14,paddingHorizontal:12,flexDirection:'row-reverse',alignItems:'center',justifyContent:'space-between'}}>
       <NText weight="semi" style={{fontSize:15,color:t.text}}>{value}</NText><Ionicons name="time-outline" size={19} color={t.accent}/>
     </TouchableOpacity>
-    <Picker visible={open} value={value} t={t} title={label} onClose={()=>setOpen(false)} onDone={v=>{onChange(v);setOpen(false)}}/>
+    <Picker visible={open} value={value} t={t} title={label} onClose={()=>setOpen(false)} onDone={(v:string)=>{onChange(v);setOpen(false)}}/>
   </View>
 }
 function Picker({visible,value,t,title,onClose,onDone}:any){
