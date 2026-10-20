@@ -16,7 +16,12 @@ export default function Booking(){
   const services=useMemo(()=>(b?.services||[]).filter((x:any)=>genderAllows(x.gender,audience)),[b,audience]);
   const selectedServices=useMemo(()=>services.filter((x:any)=>selectedIds.includes(Number(x.id))),[services,selectedIds]);
   const eligibleStaff=useMemo(()=>{if(!b||!selectedIds.length)return[];return (b.staff||[]).filter((st:any)=>{const ids=(st.service_ids||[]).map(Number);return selectedIds.every(id=>ids.includes(id))})},[b,selectedIds]);
-  const totalPrice=selectedServices.reduce((n:number,x:any)=>n+Number(x.price||0),0);const totalDeposit=selectedServices.reduce((n:number,x:any)=>n+Number(x.deposit_amount||0),0);const totalDuration=selectedServices.reduce((n:number,x:any)=>n+Number(x.duration_minutes||0),0);
+  const chosenStaff=eligibleStaff.find((x:any)=>Number(x.id)===Number(staffId||selected?.staff_id||0));
+  const overrideFor=(serviceId:number)=>chosenStaff?.service_options?.find((x:any)=>Number(x.service_id)===serviceId);
+  const calculatedPrice=selectedServices.reduce((n:number,x:any)=>{const o=overrideFor(Number(x.id));return n+Number(o?.custom_price??x.price??0)},0);
+  const totalDeposit=selectedServices.reduce((n:number,x:any)=>n+Number(x.deposit_amount||0),0);
+  const calculatedDuration=selectedServices.reduce((n:number,x:any)=>{const o=overrideFor(Number(x.id));return n+Number(o?.custom_duration_minutes??x.duration_minutes??0)},0);
+  const totalPrice=Number(selected?.total_price??calculatedPrice);const totalDuration=Number(selected?.duration_minutes??calculatedDuration);
   useEffect(()=>{setSelectedIds(v=>v.filter(id=>services.some((x:any)=>Number(x.id)===id)));if(staffId&&!eligibleStaff.some((x:any)=>Number(x.id)===staffId))setStaffId(0);setSelected(null)},[audience,eligibleStaff.length]);
   useEffect(()=>{if(!day||!selectedIds.length||!eligibleStaff.length){setSlots([]);setAvailabilityReason(eligibleStaff.length?'':'برای این ترکیب خدمات متخصص مشترک فعالی وجود ندارد.');return}setSelected(null);const staff=staffId?`&staff_id=${staffId}`:'';api(`/v1/businesses/${p.businessId}/availability?date=${day}&service_ids=${selectedIds.join(',')}${staff}`).then(j=>{setSlots(j.slots||[]);setAvailabilityReason(j.bookable===false?(j.reason||'این ترکیب قابل رزرو نیست.'):'')}).catch(e=>{setSlots([]);setAvailabilityReason(e.message||'زمان آزاد دریافت نشد.')})},[day,selectedIds.join(','),staffId,eligibleStaff.length]);
   const toggleService=(id:number)=>{if(!services.some((x:any)=>Number(x.id)===id))return Alert.alert('این خدمت برای حساب شما قابل انتخاب نیست');const isOn=selectedIds.includes(id);if(isOn&&selectedIds.length===1)return Alert.alert('حداقل یک خدمت لازم است');setSelectedIds(v=>isOn?v.filter(x=>x!==id):[...v,id]);};
