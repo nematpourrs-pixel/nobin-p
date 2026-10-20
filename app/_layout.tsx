@@ -27,6 +27,7 @@ export default function Layout(){
     <Stack.Screen name="business-dashboard" options={{title:'مدیریت کسب‌وکار',animation:'fade'}}/>
     <Stack.Screen name="business-register" options={{title:'راه‌اندازی کسب‌وکار',animation:'fade'}}/>
     <Stack.Screen name="business-manage" options={{title:'مدیریت کسب‌وکار',animation:'fade'}}/>
+    <Stack.Screen name="staff-services" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="business-post-create" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="support" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="review" options={{headerShown:false,animation:'fade'}}/>
