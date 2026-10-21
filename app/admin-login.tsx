@@ -1,0 +1,23 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useMemo, useRef, useState } from 'react';
+import { Alert, Linking, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { api } from '../src/api';
+import { effectiveAudience, paletteFor } from '../src/prefs';
+import { setSession } from '../src/session';
+import { usePrefs } from '../src/usePrefs';
+import { NText } from '../src/ui';
+
+export default function AdminLogin(){
+ const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);const[code,setCode]=useState('');const[activation,setActivation]=useState('');const[needsActivation,setNeedsActivation]=useState(false);const[busy,setBusy]=useState(false);
+ const verify=async()=>{const c=code.replace(/\D/g,'');if(c.length!==6)return Alert.alert('کد ورود','کد ۶ رقمی بله را وارد کنید.');setBusy(true);try{const j=await api('/v1/auth/bale/verify',{method:'POST',body:JSON.stringify({code:c})});await setSession(j.token,j.user);try{await api('/v1/app-admin/stats');router.replace('/admin-dashboard')}catch(e:any){if(e.status===403)setNeedsActivation(true);else throw e}}catch(e:any){Alert.alert('ورود ناموفق',e.message)}finally{setBusy(false)}};
+ const activate=async()=>{if(!activation.trim())return Alert.alert('کلید مدیر','کلید مدیریت سرور را وارد کنید.');setBusy(true);try{await api('/v1/app-admin/bootstrap',{method:'POST',body:JSON.stringify({admin_key:activation.trim()})});Alert.alert('فعال شد','حساب شما به مدیر سیستم ارتقا یافت.');router.replace('/admin-dashboard')}catch(e:any){Alert.alert('فعال‌سازی ناموفق',e.message)}finally{setBusy(false)}};
+ return <SafeAreaView style={s.root}><View style={s.wrap}><View style={s.logo}><Ionicons name="shield-checkmark-outline" size={38} color={t.accent}/></View><NText weight="extra" style={s.h1}>نوبین مدیریت</NText><NText style={s.p}>اپ اختصاصی مدیر سیستم؛ کاربران، کسب‌وکارها، رزروها، نظرات، پشتیبانی، پیام‌ها و تنظیمات سامانه را از اینجا مدیریت کنید.</NText>
+ <TouchableOpacity style={s.bale} onPress={()=>Linking.openURL('https://ble.ir/nobin_bot?start=login')}><Ionicons name="chatbubble-ellipses-outline" size={18} color={t.accent}/><NText weight="semi" style={s.baleT}>دریافت کد ورود از ربات بله</NText></TouchableOpacity>
+ <TextInput value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6} placeholder="کد ۶ رقمی ورود" placeholderTextColor={t.muted} style={s.input}/>
+ <TouchableOpacity disabled={busy} onPress={verify} style={s.btn}><NText weight="bold" style={s.btnT}>{busy?'در حال بررسی...':'ورود به مدیریت'}</NText></TouchableOpacity>
+ {needsActivation?<View style={s.activation}><NText weight="bold" style={s.actTitle}>این حساب هنوز مدیر سیستم نیست</NText><NText style={s.actP}>برای اولین بار، کلید مدیریت تعریف‌شده در فایل <NText weight="semi">config/local.php</NText> را وارد کنید. بعد از فعال‌سازی، دفعات بعد فقط با بله وارد می‌شوید.</NText><TextInput value={activation} onChangeText={setActivation} secureTextEntry placeholder="Admin Key" placeholderTextColor={t.muted} style={s.input}/><TouchableOpacity disabled={busy} onPress={activate} style={s.btn}><NText weight="bold" style={s.btnT}>فعال‌سازی حساب مدیر</NText></TouchableOpacity></View>:null}
+ <NText style={s.note}>این اپ برای مدیر سیستم است و از اپ عمومی نوبین جدا نصب می‌شود.</NText></View></SafeAreaView>
+}
+const styles=(t:any)=>StyleSheet.create({root:{flex:1,backgroundColor:t.bg},wrap:{flex:1,padding:22,justifyContent:'center',gap:12},logo:{width:72,height:72,borderRadius:24,backgroundColor:t.accentSoft,alignItems:'center',justifyContent:'center',alignSelf:'center'},h1:{fontSize:25,color:t.text,textAlign:'center'},p:{fontSize:11.4,lineHeight:21,color:t.muted,textAlign:'center'},bale:{height:48,borderRadius:14,borderWidth:1,borderColor:t.line,backgroundColor:t.card,flexDirection:'row-reverse',gap:7,alignItems:'center',justifyContent:'center'},baleT:{fontSize:11.7,color:t.accent},input:{height:50,borderWidth:1,borderColor:t.line,borderRadius:14,backgroundColor:t.card,paddingHorizontal:13,fontFamily:'Vazirmatn_400Regular',fontSize:14,color:t.text,textAlign:'center'},btn:{height:50,borderRadius:14,backgroundColor:t.accent,alignItems:'center',justifyContent:'center'},btnT:{fontSize:12.5,color:'#fff'},activation:{backgroundColor:t.card,borderWidth:1,borderColor:t.line,borderRadius:18,padding:13,gap:9},actTitle:{fontSize:13.5,color:t.text,textAlign:'right'},actP:{fontSize:10.6,lineHeight:19,color:t.muted,textAlign:'right'},note:{fontSize:9.8,color:t.muted,textAlign:'center'}})
