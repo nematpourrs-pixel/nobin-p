@@ -1,0 +1,39 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { api } from '../src/api';
+import { FormField, FormScreen } from '../src/formUx';
+import { IRAN_LOCATIONS, IRAN_PROVINCES } from '../src/iranLocations';
+import { pickAndUploadImage } from '../src/imageUpload';
+import { effectiveAudience, paletteFor } from '../src/prefs';
+import { usePrefs } from '../src/usePrefs';
+import { InternalHeader, NText } from '../src/ui';
+
+export default function BusinessInfo(){
+ const p=useLocalSearchParams<{businessId:string}>();const bid=Number(p.businessId||0);const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);const scroll=useRef<any>(null);
+ const[b,setB]=useState<any>(null);const[form,setForm]=useState<any>({});const[busy,setBusy]=useState(false);
+ const load=useCallback(()=>{api('/v1/me/businesses/'+bid).then(j=>{setB(j.business);setForm({...j.business})}).catch((e:any)=>Alert.alert('خطا',e.message))},[bid]);useFocusEffect(load);
+ const set=(k:string,v:string)=>setForm((x:any)=>({...x,[k]:v}));
+ const save=async()=>{setBusy(true);try{await api('/v1/businesses/'+bid,{method:'PATCH',body:JSON.stringify({name:form.name,manager_name:form.manager_name,phone:form.phone,alternate_phone:form.alternate_phone,email:form.email,province:form.province,city:form.city,address:form.address,postal_code:form.postal_code,instagram:form.instagram,website:form.website,description:form.description,parking_info:form.parking_info})});Alert.alert('ذخیره شد','اطلاعات کسب‌وکار به‌روزرسانی شد.');await load()}catch(e:any){Alert.alert('ذخیره نشد',e.message)}finally{setBusy(false)}};
+ const upload=async(scope:'business_cover'|'business_logo')=>{try{const u=await pickAndUploadImage(scope,bid);if(!u)return;await api('/v1/businesses/'+bid,{method:'PATCH',body:JSON.stringify({[scope==='business_cover'?'cover_url':'logo_url']:u.url})});await load()}catch(e:any){Alert.alert('تصویر',e.message)}};
+ if(!b)return <SafeAreaView style={s.root}><NText style={s.loading}>در حال دریافت...</NText></SafeAreaView>;
+ return <SafeAreaView edges={['bottom']} style={s.root}><FormScreen scrollRef={scroll}><InternalHeader t={t} title="اطلاعات کسب‌وکار" sub="هویت، اطلاعات تماس، نشانی و تصاویر مجموعه"/>
+ <View style={s.cover}>{form.cover_url?<Image source={{uri:form.cover_url,cache:'force-cache'}} style={s.coverImg}/>:<View style={s.coverEmpty}><Ionicons name="images-outline" size={28} color={t.muted}/></View>}<TouchableOpacity style={s.photoBtn} onPress={()=>upload('business_cover')}><Ionicons name="camera-outline" size={17} color="#fff"/><NText weight="semi" style={s.photoT}>تصویر مجموعه</NText></TouchableOpacity></View>
+ <View style={s.logoRow}>{form.logo_url?<Image source={{uri:form.logo_url,cache:'force-cache'}} style={s.logo}/>:<View style={s.logoEmpty}><Ionicons name="storefront-outline" size={22} color={t.accent}/></View>}<TouchableOpacity style={s.logoBtn} onPress={()=>upload('business_logo')}><NText weight="semi" style={s.logoBtnT}>تغییر لوگو</NText></TouchableOpacity></View>
+ <FormField label="نام کسب‌وکار" value={form.name||''} onChange={(v:string)=>set('name',v)} t={t} scrollRef={scroll}/>
+ <FormField label="نام مدیر / مسئول مجموعه" value={form.manager_name||''} onChange={(v:string)=>set('manager_name',v)} t={t} scrollRef={scroll}/>
+ <View style={s.two}><View style={{flex:1}}><FormField label="شماره تماس" value={form.phone||''} onChange={(v:string)=>set('phone',v)} t={t} scrollRef={scroll}/></View><View style={{flex:1}}><FormField label="شماره تماس دوم" value={form.alternate_phone||''} onChange={(v:string)=>set('alternate_phone',v)} t={t} scrollRef={scroll}/></View></View>
+ <FormField label="ایمیل" value={form.email||''} onChange={(v:string)=>set('email',v)} t={t} scrollRef={scroll}/>
+ <View style={s.two}><Choice label="استان" value={form.province} items={IRAN_PROVINCES} onPick={(v:string)=>{set('province',v);set('city','')}} t={t}/><Choice label="شهر" value={form.city} items={IRAN_LOCATIONS[form.province]||[]} onPick={(v:string)=>set('city',v)} t={t}/></View>
+ <FormField label="نشانی دقیق" value={form.address||''} onChange={(v:string)=>set('address',v)} t={t} multiline scrollRef={scroll}/>
+ <FormField label="کد پستی" value={form.postal_code||''} onChange={(v:string)=>set('postal_code',v)} t={t} scrollRef={scroll}/>
+ <View style={s.two}><View style={{flex:1}}><FormField label="اینستاگرام" value={form.instagram||''} onChange={(v:string)=>set('instagram',v)} t={t} scrollRef={scroll}/></View><View style={{flex:1}}><FormField label="وب‌سایت" value={form.website||''} onChange={(v:string)=>set('website',v)} t={t} scrollRef={scroll}/></View></View>
+ <FormField label="معرفی کسب‌وکار" value={form.description||''} onChange={(v:string)=>set('description',v)} t={t} multiline scrollRef={scroll}/>
+ <FormField label="پارکینگ / دسترسی / توضیحات مراجعه" value={form.parking_info||''} onChange={(v:string)=>set('parking_info',v)} t={t} multiline scrollRef={scroll}/>
+ <TouchableOpacity disabled={busy} onPress={save} style={s.save}><NText weight="bold" style={s.saveT}>{busy?'در حال ذخیره...':'ذخیره اطلاعات کسب‌وکار'}</NText></TouchableOpacity>
+ </FormScreen></SafeAreaView>
+}
+function Choice({label,value,items,onPick,t}:any){return <View style={{flex:1,gap:5}}><NText style={{fontSize:11.3,color:t.muted,textAlign:'right'}}>{label}</NText><View style={{flexDirection:'row-reverse',gap:5,flexWrap:'wrap'}}>{items.slice(0,40).map((x:string)=><TouchableOpacity key={x} onPress={()=>onPick(x)} style={{paddingHorizontal:8,paddingVertical:7,borderRadius:10,borderWidth:1,borderColor:value===x?t.accent:t.line,backgroundColor:value===x?t.accentSoft:t.card}}><NText style={{fontSize:9.7,color:value===x?t.accent:t.text}}>{x}</NText></TouchableOpacity>)}</View></View>}
+const styles=(t:any)=>StyleSheet.create({root:{flex:1,backgroundColor:t.bg},loading:{padding:30,textAlign:'center',color:t.muted},cover:{height:170,borderRadius:20,overflow:'hidden',backgroundColor:t.card,borderWidth:1,borderColor:t.line,position:'relative'},coverImg:{width:'100%',height:'100%'},coverEmpty:{flex:1,alignItems:'center',justifyContent:'center'},photoBtn:{position:'absolute',bottom:10,right:10,backgroundColor:t.accent,borderRadius:12,paddingHorizontal:11,paddingVertical:8,flexDirection:'row-reverse',gap:5,alignItems:'center'},photoT:{fontSize:10.5,color:'#fff'},logoRow:{flexDirection:'row-reverse',alignItems:'center',gap:10},logo:{width:62,height:62,borderRadius:18},logoEmpty:{width:62,height:62,borderRadius:18,backgroundColor:t.accentSoft,alignItems:'center',justifyContent:'center'},logoBtn:{paddingHorizontal:12,paddingVertical:9,borderRadius:11,borderWidth:1,borderColor:t.line,backgroundColor:t.card},logoBtnT:{fontSize:10.8,color:t.accent},two:{flexDirection:'row-reverse',gap:8},save:{height:50,borderRadius:15,backgroundColor:t.accent,alignItems:'center',justifyContent:'center'},saveT:{fontSize:12.8,color:'#fff'}})
