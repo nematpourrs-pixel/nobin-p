@@ -1,0 +1,113 @@
+name: Android Admin Build
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/trigger/admin-build'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_PUBLIC_NOBIN_ADMIN_APP: "1"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Install compatible image picker
+        run: npx expo install expo-image-picker
+      - name: Prepare admin app identity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          p='app.json'
+          j=json.load(open(p,encoding='utf-8'))
+          e=j['expo']
+          e['name']='نوبین مدیریت'
+          e['slug']='nobin-admin'
+          e['scheme']='nobinadmin'
+          e['version']='1.0.0'
+          e['android']['package']='ir.nobin.admin'
+          e['android']['versionCode']=10000
+          e['extra']={**e.get('extra',{}),'adminApp':True,'market':'PRIVATE_ADMIN'}
+          open(p,'w',encoding='utf-8').write(json.dumps(j,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: Generate launcher icons
+        shell: bash
+        run: |
+          python3 -m pip install --quiet pillow
+          mkdir -p assets
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          W=1024
+          cream=(247,242,232,255); teal=(0,82,70,255); gold=(207,161,67,255)
+          im=Image.new("RGBA",(W,W),cream); d=ImageDraw.Draw(im)
+          d.rounded_rectangle((150,145,874,878),radius=150,fill=teal)
+          d.rounded_rectangle((195,285,829,825),radius=95,fill=cream)
+          for x in (345,680):
+              d.rounded_rectangle((x-42,72,x+42,235),radius=42,fill=gold)
+          d.polygon([(512,350),(690,430),(650,675),(512,790),(374,675),(334,430)],fill=gold)
+          d.polygon([(512,405),(625,455),(598,625),(512,700),(426,625),(399,455)],fill=cream)
+          d.ellipse((474,492,550,568),fill=teal)
+          d.rounded_rectangle((492,555,532,635),radius=18,fill=teal)
+          im.convert("RGB").save("assets/icon.png",quality=92)
+          fg=Image.new("RGBA",(W,W),(0,0,0,0)); icon=im.resize((760,760),Image.Resampling.LANCZOS); fg.alpha_composite(icon,((W-760)//2,(W-760)//2)); fg.save("assets/adaptive-icon.png")
+          PY
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Validate Expo bundle
+        run: npx expo export --platform android --output-dir /tmp/nobin-admin-export
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android --clean --no-install
+      - name: Disable debug signing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/build.gradle'); s=p.read_text()
+          i=s.find('release {')
+          if i<0: raise SystemExit('release block not found')
+          j=s.find('signingConfig signingConfigs.debug',i)
+          if j>=0: s=s[:j]+'signingConfig null'+s[j+len('signingConfig signingConfigs.debug'):]
+          rel=s.find('release {')
+          if rel>=0 and "debugSymbolLevel 'none'" not in s[rel:rel+1200]:
+              brace=s.find('{',rel)+1; s=s[:brace]+"\n            ndk { debugSymbolLevel 'none' }"+s[brace:]
+          p.write_text(s)
+          gp=Path('android/gradle.properties'); gs=gp.read_text() if gp.exists() else ''
+          lines=[x for x in gs.splitlines() if not x.startswith('reactNativeArchitectures=')]
+          lines.append('reactNativeArchitectures=armeabi-v7a,arm64-v8a')
+          gp.write_text('\n'.join(lines)+'\n')
+          PY
+      - name: Build unsigned admin APK and AAB
+        working-directory: android
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8 -Dorg.gradle.workers.max=2"
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace --no-daemon --max-workers=2
+          ./gradlew bundleRelease --stacktrace --no-daemon --max-workers=2
+      - name: Collect outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-output
+          find android/app/build/outputs -type f \( -name '*.apk' -o -name '*.aab' \) -print -exec cp {} release-output/ \;
+          ls -lah release-output
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nobin-admin-android-unsigned
+          path: release-output
+          if-no-files-found: error
+          retention-days: 7
