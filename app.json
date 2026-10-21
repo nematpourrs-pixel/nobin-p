@@ -7,7 +7,14 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "نوبین برای انتخاب تصویر کسب‌وکار، خدمات و کارکنان به تصاویر انتخابی شما دسترسی دارد.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "android": {
       "package": "ir.nobin.app",
