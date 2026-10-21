@@ -27,11 +27,17 @@ export default function Layout(){
     <Stack.Screen name="business-dashboard" options={{title:'مدیریت کسب‌وکار',animation:'fade'}}/>
     <Stack.Screen name="business-register" options={{title:'راه‌اندازی کسب‌وکار',animation:'fade'}}/>
     <Stack.Screen name="business-manage" options={{title:'مدیریت کسب‌وکار',animation:'fade'}}/>
+    <Stack.Screen name="business-hub" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="business-info" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="business-services" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="business-staff" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="business-calendar" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="staff-services" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="business-post-create" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="support" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="review" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="follows" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="admin-login" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-support" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-dashboard" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-entity" options={{headerShown:false,animation:'fade'}}/>
