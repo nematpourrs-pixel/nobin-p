@@ -36,33 +36,26 @@ jobs:
           e['name']='نوبین مدیریت'
           e['slug']='nobin-admin'
           e['scheme']='nobinadmin'
-          e['version']='1.0.1'
+          e['version']='1.0.2'
           e['android']['package']='ir.nobin.admin'
-          e['android']['versionCode']=10001
+          e['android']['versionCode']=10002
           e['extra']={**e.get('extra',{}),'adminApp':True,'market':'PRIVATE_ADMIN'}
           open(p,'w',encoding='utf-8').write(json.dumps(j,ensure_ascii=False,indent=2)+'\n')
           PY
-      - name: Generate launcher icons
+      - name: Restore fixed Nobin logo
         shell: bash
         run: |
           python3 -m pip install --quiet pillow
           mkdir -p assets
+          base64 -d assets/nobin-logo-fixed.jpg.b64 > /tmp/nobin-logo-fixed.jpg
           python3 - <<'PY'
-          from PIL import Image, ImageDraw
-          W=1024
-          cream=(247,242,232,255); teal=(0,82,70,255); gold=(207,161,67,255)
-          im=Image.new("RGBA",(W,W),cream); d=ImageDraw.Draw(im)
-          d.rounded_rectangle((150,145,874,878),radius=150,fill=teal)
-          d.rounded_rectangle((195,285,829,825),radius=95,fill=cream)
-          for x in (345,680):
-              d.rounded_rectangle((x-42,72,x+42,235),radius=42,fill=gold)
-          d.polygon([(512,350),(690,430),(650,675),(512,790),(374,675),(334,430)],fill=gold)
-          d.polygon([(512,405),(625,455),(598,625),(512,700),(426,625),(399,455)],fill=cream)
-          d.ellipse((474,492,550,568),fill=teal)
-          d.rounded_rectangle((492,555,532,635),radius=18,fill=teal)
-          im.convert("RGB").save("assets/icon.png",quality=92)
-          fg=Image.new("RGBA",(W,W),(0,0,0,0)); icon=im.resize((760,760),Image.Resampling.LANCZOS); fg.alpha_composite(icon,((W-760)//2,(W-760)//2)); fg.save("assets/adaptive-icon.png")
+          from PIL import Image
+          im=Image.open('/tmp/nobin-logo-fixed.jpg').convert('RGB')
+          im=im.resize((1024,1024),Image.Resampling.LANCZOS)
+          im.save('assets/icon.png',optimize=True)
+          im.save('assets/adaptive-icon.png',optimize=True)
           PY
+          sha256sum assets/icon.png assets/adaptive-icon.png
       - name: Typecheck
         run: npm run typecheck
       - name: Validate Expo bundle
