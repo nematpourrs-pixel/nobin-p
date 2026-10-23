@@ -36,9 +36,9 @@ jobs:
           e['name']='نوبین مدیریت'
           e['slug']='nobin-admin'
           e['scheme']='nobinadmin'
-          e['version']='1.0.0'
+          e['version']='1.0.1'
           e['android']['package']='ir.nobin.admin'
-          e['android']['versionCode']=10000
+          e['android']['versionCode']=10001
           e['extra']={**e.get('extra',{}),'adminApp':True,'market':'PRIVATE_ADMIN'}
           open(p,'w',encoding='utf-8').write(json.dumps(j,ensure_ascii=False,indent=2)+'\n')
           PY
