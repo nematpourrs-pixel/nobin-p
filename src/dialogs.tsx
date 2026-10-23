@@ -56,7 +56,7 @@ export function NobinDialogProvider({ children }: { children: ReactNode }) {
       onRequestClose={() => { if (canDismiss) dismiss(cancelButton); }}
     >
       <View style={styles.overlay}>
-        <Pressable style={StyleSheet.absoluteFillObject} accessible={false} onPress={() => { if (canDismiss) dismiss(cancelButton); }} />
+        <Pressable style={StyleSheet.absoluteFill} accessible={false} onPress={() => { if (canDismiss) dismiss(cancelButton); }} />
         <View style={[styles.dialog, { backgroundColor: surface }]} accessibilityViewIsModal>
           <View style={[styles.symbol, { backgroundColor: accent + '15' }]}>
             <Ionicons name={iconName as any} size={29} color={accent} />
