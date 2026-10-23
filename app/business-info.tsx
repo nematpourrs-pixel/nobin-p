@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -14,10 +15,10 @@ import { InternalHeader, NText } from '../src/ui';
 export default function BusinessInfo(){
  const p=useLocalSearchParams<{businessId:string}>();const bid=Number(p.businessId||0);const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);const scroll=useRef<any>(null);
  const[b,setB]=useState<any>(null);const[form,setForm]=useState<any>({});const[busy,setBusy]=useState(false);
- const load=useCallback(()=>{api('/v1/me/businesses/'+bid).then(j=>{setB(j.business);setForm({...j.business})}).catch((e:any)=>Alert.alert('خطا',e.message))},[bid]);useFocusEffect(load);
+ const load=useCallback(()=>{api('/v1/me/businesses/'+bid).then(j=>{setB(j.business);setForm({...j.business})}).catch((e:any)=>nobinAlert('خطا',e.message))},[bid]);useFocusEffect(load);
  const set=(k:string,v:string)=>setForm((x:any)=>({...x,[k]:v}));
- const save=async()=>{setBusy(true);try{await api('/v1/businesses/'+bid,{method:'PATCH',body:JSON.stringify({name:form.name,manager_name:form.manager_name,phone:form.phone,alternate_phone:form.alternate_phone,email:form.email,province:form.province,city:form.city,address:form.address,postal_code:form.postal_code,instagram:form.instagram,website:form.website,description:form.description,parking_info:form.parking_info})});Alert.alert('ذخیره شد','اطلاعات کسب‌وکار به‌روزرسانی شد.');await load()}catch(e:any){Alert.alert('ذخیره نشد',e.message)}finally{setBusy(false)}};
- const upload=async(scope:'business_cover'|'business_logo')=>{try{const u=await pickAndUploadImage(scope,bid);if(!u)return;await api('/v1/businesses/'+bid,{method:'PATCH',body:JSON.stringify({[scope==='business_cover'?'cover_url':'logo_url']:u.url})});await load()}catch(e:any){Alert.alert('تصویر',e.message)}};
+ const save=async()=>{setBusy(true);try{await api('/v1/businesses/'+bid,{method:'PATCH',body:JSON.stringify({name:form.name,manager_name:form.manager_name,phone:form.phone,alternate_phone:form.alternate_phone,email:form.email,province:form.province,city:form.city,address:form.address,postal_code:form.postal_code,instagram:form.instagram,website:form.website,description:form.description,parking_info:form.parking_info})});nobinAlert('ذخیره شد','اطلاعات کسب‌وکار به‌روزرسانی شد.');await load()}catch(e:any){nobinAlert('ذخیره نشد',e.message)}finally{setBusy(false)}};
+ const upload=async(scope:'business_cover'|'business_logo')=>{try{const u=await pickAndUploadImage(scope,bid);if(!u)return;await api('/v1/businesses/'+bid,{method:'PATCH',body:JSON.stringify({[scope==='business_cover'?'cover_url':'logo_url']:u.url})});await load()}catch(e:any){nobinAlert('تصویر',e.message)}};
  if(!b)return <SafeAreaView style={s.root}><NText style={s.loading}>در حال دریافت...</NText></SafeAreaView>;
  return <SafeAreaView edges={['bottom']} style={s.root}><FormScreen scrollRef={scroll}><InternalHeader t={t} title="اطلاعات کسب‌وکار" sub="هویت، اطلاعات تماس، نشانی و تصاویر مجموعه"/>
  <View style={s.cover}>{form.cover_url?<Image source={{uri:form.cover_url,cache:'force-cache'}} style={s.coverImg}/>:<View style={s.coverEmpty}><Ionicons name="images-outline" size={28} color={t.muted}/></View>}<TouchableOpacity style={s.photoBtn} onPress={()=>upload('business_cover')}><Ionicons name="camera-outline" size={17} color="#fff"/><NText weight="semi" style={s.photoT}>تصویر مجموعه</NText></TouchableOpacity></View>

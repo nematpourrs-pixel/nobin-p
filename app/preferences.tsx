@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,7 +16,7 @@ export default function Preferences(){
   const patch=(x:Partial<LocalPrefs>)=>{setSaved(false);setPrefs(p=>({...p,...x}))};
   const chooseGender=(g:ProfileGender)=>patch({profileGender:g,audience:g as Audience});
   const chooseAppearance=async(a:Appearance)=>{const next={...prefs,appearance:a};setPrefs(next);setSaved(false);await savePrefs(next)};
-  const save=async()=>{try{const next=await savePrefs({...prefs,audience:effectiveAudience(prefs)});setPrefs(next);if(await getToken())await api('/v1/me/preferences',{method:'PATCH',body:JSON.stringify({profile_gender:next.profileGender,service_audience:next.audience})});setSaved(true)}catch(e:any){Alert.alert('ذخیره نشد',e.message||'خطایی رخ داد.')}};
+  const save=async()=>{try{const next=await savePrefs({...prefs,audience:effectiveAudience(prefs)});setPrefs(next);if(await getToken())await api('/v1/me/preferences',{method:'PATCH',body:JSON.stringify({profile_gender:next.profileGender,service_audience:next.audience})});setSaved(true)}catch(e:any){nobinAlert('ذخیره نشد',e.message||'خطایی رخ داد.')}};
   return <SafeAreaView edges={['bottom']} style={s.root}><ScrollView contentContainerStyle={s.wrap} keyboardShouldPersistTaps="handled">
     <View><NText weight="bold" style={s.h1}>تجربه نوبین را تنظیم کن</NText><NText style={s.p}>جنسیت حساب، خدمات قابل نمایش را تعیین می‌کند؛ خدمات جنسیت مقابل در جستجو، پروفایل مجموعه و رزرو نمایش داده نمی‌شود.</NText></View>
     {logged?<Section title="جنسیت حساب" sub="برای نمایش خدمات و قواعد ثبت کسب‌وکار"><View style={s.segment}>{(['FEMALE','MALE'] as ProfileGender[]).map(g=><Choice key={g} label={g==='FEMALE'?'خانم':'آقا'} on={prefs.profileGender===g} onPress={()=>chooseGender(g)} t={t}/>)}</View>{prefs.profileGender==='UNSPECIFIED'?<NText style={s.hint}>برای شخصی‌سازی دقیق خدمات، جنسیت حساب را مشخص کن.</NText>:null}</Section>:<Section title="نوع خدمات" sub="برای کاربر مهمان"><View style={s.segment}>{(['FEMALE','MALE','ALL'] as Audience[]).map(a=><Choice key={a} label={audienceLongLabel(a)} on={prefs.audience===a} onPress={()=>patch({audience:a})} t={t}/>)}</View></Section>}

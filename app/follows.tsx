@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,7 +13,7 @@ import { InternalHeader, NText } from '../src/ui';
 export default function Following(){
   const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);
   const[tab,setTab]=useState<'following'|'followers'>('following');const[following,setFollowing]=useState<any[]>([]);const[businesses,setBusinesses]=useState<any[]>([]);const[followers,setFollowers]=useState<Record<string,any[]>>({});const[loading,setLoading]=useState(true);
-  const load=async()=>{setLoading(true);try{const [f,b]=await Promise.all([api('/v1/me/following'),api('/v1/me/businesses')]);setFollowing(f.items||[]);const mine=(b.items||[]).filter((x:any)=>x.status==='APPROVED');setBusinesses(mine);const entries=await Promise.all(mine.map(async(x:any)=>{try{const r=await api('/v1/businesses/'+x.id+'/followers');return[String(x.id),r.items||[]]}catch{return[String(x.id),[]]}}));setFollowers(Object.fromEntries(entries))}catch(e:any){Alert.alert('خطا',e.message)}finally{setLoading(false)}};
+  const load=async()=>{setLoading(true);try{const [f,b]=await Promise.all([api('/v1/me/following'),api('/v1/me/businesses')]);setFollowing(f.items||[]);const mine=(b.items||[]).filter((x:any)=>x.status==='APPROVED');setBusinesses(mine);const entries=await Promise.all(mine.map(async(x:any)=>{try{const r=await api('/v1/businesses/'+x.id+'/followers');return[String(x.id),r.items||[]]}catch{return[String(x.id),[]]}}));setFollowers(Object.fromEntries(entries))}catch(e:any){nobinAlert('خطا',e.message)}finally{setLoading(false)}};
   useEffect(()=>{load()},[]);
   return <SafeAreaView edges={['bottom']} style={s.root}><ScrollView contentContainerStyle={s.wrap}><InternalHeader t={t} title="دنبال‌ها" sub="کسب‌وکارهای دنبال‌شده و دنبال‌کنندگان کسب‌وکارهای شما"/>
   <View style={s.tabs}><TouchableOpacity onPress={()=>setTab('following')} style={[s.tab,tab==='following'&&s.tabOn]}><NText weight="semi" style={[s.tabT,tab==='following'&&s.tabTOn]}>دنبال‌شده‌ها</NText></TouchableOpacity><TouchableOpacity onPress={()=>setTab('followers')} style={[s.tab,tab==='followers'&&s.tabOn]}><NText weight="semi" style={[s.tabT,tab==='followers'&&s.tabTOn]}>دنبال‌کنندگان</NText></TouchableOpacity></View>

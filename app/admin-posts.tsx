@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,8 +11,8 @@ import { InternalHeader, NText } from '../src/ui';
 export default function AdminPosts(){
  const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);
  const[items,setItems]=useState<any[]>([]);const[title,setTitle]=useState('');const[body,setBody]=useState('');const[scope,setScope]=useState('GLOBAL');const[audience,setAudience]=useState('ALL');const[province,setProvince]=useState('');const[city,setCity]=useState('');const[userIds,setUserIds]=useState('');
- const load=async()=>{try{const j=await api('/v1/app-admin/posts');setItems(j.items||[])}catch(e:any){Alert.alert('خطا',e.message)}};useEffect(()=>{load()},[]);
- const send=async()=>{try{const payload:any={title,body,scope,audience,province,city};if(scope==='CUSTOM')payload.user_ids=userIds.split(',').map(x=>Number(x.trim())).filter(Boolean);await api('/v1/app-admin/posts',{method:'POST',body:JSON.stringify(payload)});setTitle('');setBody('');setUserIds('');Alert.alert('ارسال شد','پیام در بلاگ نوبین منتشر شد.');load()}catch(e:any){Alert.alert('ارسال نشد',e.message)}};
+ const load=async()=>{try{const j=await api('/v1/app-admin/posts');setItems(j.items||[])}catch(e:any){nobinAlert('خطا',e.message)}};useEffect(()=>{load()},[]);
+ const send=async()=>{try{const payload:any={title,body,scope,audience,province,city};if(scope==='CUSTOM')payload.user_ids=userIds.split(',').map(x=>Number(x.trim())).filter(Boolean);await api('/v1/app-admin/posts',{method:'POST',body:JSON.stringify(payload)});setTitle('');setBody('');setUserIds('');nobinAlert('ارسال شد','پیام در بلاگ نوبین منتشر شد.');load()}catch(e:any){nobinAlert('ارسال نشد',e.message)}};
  return <SafeAreaView edges={['bottom']} style={s.root}><KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView contentContainerStyle={s.wrap} keyboardShouldPersistTaps="always"><InternalHeader t={t} title="پیام‌های مدیریتی" sub="انتشار هدفمند از داخل اپ" hideSupport/>
  <TextInput value={title} onChangeText={setTitle} placeholder="عنوان پیام" placeholderTextColor={t.muted} style={s.input}/>
  <TextInput multiline value={body} onChangeText={setBody} placeholder="متن پیام..." placeholderTextColor={t.muted} style={[s.input,s.area]}/>

@@ -1,3 +1,4 @@
+import { nobinAlert } from '../../src/dialogs';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router, useNavigation } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,7 +16,7 @@ export default function Business(){
   if(!b)return <SafeAreaView edges={['bottom']} style={s.root}><NText style={s.loading}>در حال دریافت اطلاعات...</NText></SafeAreaView>;
   const services=(b.services||[]).filter((x:any)=>genderAllows(x.gender,audience));const bookable=services.filter((x:any)=>Number(x.bookable_staff_count||0)>0);const portfolio=(b.portfolio||b.media||[]).filter((x:any)=>String(x.type||'IMAGE').toUpperCase()!=='VIDEO').slice(0,12);const staff=b.staff||[];const badges=b.badges||[];const customerCount=Number(b.customer_count||b.completed_booking_count||b.unique_customer_count||0);
   const startBooking=()=>{if(bookable.length)router.push({pathname:'/booking',params:{businessId:String(b.id),serviceId:String(bookable[0].id)}})};
-  const toggleFollow=async()=>{if(!(await getToken()))return Alert.alert('ورود لازم است','برای دنبال‌کردن مجموعه وارد حساب نوبین شوید.',[{text:'ورود',onPress:()=>router.push('/login')},{text:'انصراف'}]);setFollowBusy(true);try{await api(`/v1/businesses/${b.id}/follow`,{method:following?'DELETE':'POST'});setFollowing(v=>!v)}catch(e:any){Alert.alert('انجام نشد',e.message||'امکان تغییر دنبال‌کردن وجود ندارد.')}finally{setFollowBusy(false)}};
+  const toggleFollow=async()=>{if(!(await getToken()))return nobinAlert('ورود لازم است','برای دنبال‌کردن مجموعه وارد حساب نوبین شوید.',[{text:'ورود',onPress:()=>router.push('/login')},{text:'انصراف'}]);setFollowBusy(true);try{await api(`/v1/businesses/${b.id}/follow`,{method:following?'DELETE':'POST'});setFollowing(v=>!v)}catch(e:any){nobinAlert('انجام نشد',e.message||'امکان تغییر دنبال‌کردن وجود ندارد.')}finally{setFollowBusy(false)}};
   return <SafeAreaView edges={[]} style={s.root}><ScrollView contentContainerStyle={[s.wrap,{paddingBottom:bookable.length?86+insets.bottom:30}]} showsVerticalScrollIndicator={false}>
     <View style={s.actions}><SupportButton t={t}/><TouchableOpacity disabled={followBusy} onPress={toggleFollow} style={[s.follow,following&&s.followOn]}><Ionicons name={following?'heart':'heart-outline'} size={18} color={following?'#fff':t.accent}/><NText weight="semi" style={[s.followT,following&&{color:'#fff'}]}>{following?'دنبال می‌کنم':'دنبال کردن'}</NText></TouchableOpacity></View>
     {b.cover_url?<Image source={{uri:b.cover_url}} style={s.cover}/>:<View style={[s.cover,s.coverFallback]}><NText weight="extra" style={s.coverT}>{b.name?.[0]||'ن'}</NText></View>}

@@ -36,9 +36,9 @@ jobs:
           e['name']='نوبین مدیریت'
           e['slug']='nobin-admin'
           e['scheme']='nobinadmin'
-          e['version']='1.0.2'
+          e['version']='1.0.3'
           e['android']['package']='ir.nobin.admin'
-          e['android']['versionCode']=10002
+          e['android']['versionCode']=10003
           e['extra']={**e.get('extra',{}),'adminApp':True,'market':'PRIVATE_ADMIN'}
           open(p,'w',encoding='utf-8').write(json.dumps(j,ensure_ascii=False,indent=2)+'\n')
           PY
@@ -47,13 +47,24 @@ jobs:
         run: |
           python3 -m pip install --quiet pillow
           mkdir -p assets
-          base64 --decode --ignore-garbage assets/nobin-logo-fixed.webp.b64 > /tmp/nobin-logo-fixed.webp
+          base64 --decode assets/nobin-logo-fixed.webp.b64 > /tmp/nobin-logo-fixed.webp
           python3 - <<'PY'
           from PIL import Image
-          im=Image.open('/tmp/nobin-logo-fixed.webp').convert('RGB')
-          im=im.resize((1024,1024),Image.Resampling.LANCZOS)
-          im.save('assets/icon.png',optimize=True)
-          im.save('assets/adaptive-icon.png',optimize=True)
+          from pathlib import Path
+          p=Path('/tmp/nobin-logo-fixed.webp')
+          with Image.open(p) as check: check.verify()
+          source=Image.open(p).convert('RGBA')
+          # Ordinary icon: full approved artwork, no crop.
+          normal=Image.new('RGB',(1024,1024),(247,242,232))
+          regular=source.resize((860,860),Image.Resampling.LANCZOS).convert('RGB')
+          normal.paste(regular,(82,82))
+          normal.save('assets/icon.png',optimize=True)
+          # Adaptive-icon masks may be circular: whole square remains in the
+          # guaranteed safe circle (corner radius 440/sqrt(2) < 1024*33/108).
+          adaptive=Image.new('RGBA',(1024,1024),(0,0,0,0))
+          art=source.resize((440,440),Image.Resampling.LANCZOS)
+          adaptive.alpha_composite(art,(292,292))
+          adaptive.save('assets/adaptive-icon.png',optimize=True)
           PY
           sha256sum assets/icon.png assets/adaptive-icon.png
       - name: Typecheck

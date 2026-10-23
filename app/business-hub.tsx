@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -10,7 +11,7 @@ import { InternalHeader, NText } from '../src/ui';
 
 export default function BusinessHub(){
  const p=useLocalSearchParams<{businessId:string}>();const bid=Number(p.businessId||0);const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);const[b,setB]=useState<any>(null);
- const load=useCallback(()=>{api('/v1/me/businesses/'+bid).then(j=>setB(j.business)).catch((e:any)=>Alert.alert('خطا',e.message))},[bid]);useFocusEffect(load);
+ const load=useCallback(()=>{api('/v1/me/businesses/'+bid).then(j=>setB(j.business)).catch((e:any)=>nobinAlert('خطا',e.message))},[bid]);useFocusEffect(load);
  const cards=[
   ['business-info','اطلاعات کسب‌وکار','نام، مدیر، تماس، نشانی، معرفی و تصاویر','storefront-outline'],
   ['business-services','خدمات','خدمات، قیمت، مدت و نمونه‌کارها','cut-outline'],

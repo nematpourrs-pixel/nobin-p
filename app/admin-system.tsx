@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,9 +10,9 @@ import { InternalHeader, NText } from '../src/ui';
 export default function AdminSystem(){
  const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);
  const[diag,setDiag]=useState<any>({});const[chatId,setChatId]=useState('');
- const load=async()=>{try{const j=await api('/v1/app-admin/diagnostics');setDiag(j.diagnostics||{})}catch(e:any){Alert.alert('خطا',e.message)}};useEffect(()=>{load()},[]);
- const saveChat=async()=>{try{await api('/v1/app-admin/settings/bale-admin-chat',{method:'POST',body:JSON.stringify({chat_id:chatId.trim()})});Alert.alert('ذخیره شد','شناسه مدیر بله به‌روزرسانی شد.')}catch(e:any){Alert.alert('خطا',e.message)}};
- const hook=async()=>{try{await api('/v1/app-admin/bale/set-webhook',{method:'POST'});Alert.alert('انجام شد','وب‌هوک بله مجدداً تنظیم شد.')}catch(e:any){Alert.alert('خطا',e.message)}};
+ const load=async()=>{try{const j=await api('/v1/app-admin/diagnostics');setDiag(j.diagnostics||{})}catch(e:any){nobinAlert('خطا',e.message)}};useEffect(()=>{load()},[]);
+ const saveChat=async()=>{try{await api('/v1/app-admin/settings/bale-admin-chat',{method:'POST',body:JSON.stringify({chat_id:chatId.trim()})});nobinAlert('ذخیره شد','شناسه مدیر بله به‌روزرسانی شد.')}catch(e:any){nobinAlert('خطا',e.message)}};
+ const hook=async()=>{try{await api('/v1/app-admin/bale/set-webhook',{method:'POST'});nobinAlert('انجام شد','وب‌هوک بله مجدداً تنظیم شد.')}catch(e:any){nobinAlert('خطا',e.message)}};
  return <SafeAreaView edges={['bottom']} style={s.root}><KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView contentContainerStyle={s.wrap} keyboardShouldPersistTaps="always"><InternalHeader t={t} title="تنظیمات و سلامت سیستم" sub="ابزارهای فنی مدیر سیستم" hideSupport/>
  <View style={s.card}><Row t={t} label="نسخه بکند" value={diag.version||'—'}/><Row t={t} label="PHP" value={diag.php||'—'}/><Row t={t} label="MySQL" value={diag.db||'—'}/><Row t={t} label="فضای ذخیره‌سازی" value={diag.storage_writable?'سالم':'نیاز به بررسی'}/><Row t={t} label="ربات بله" value={diag.bale_configured?'پیکربندی شده':'پیکربندی نشده'}/><Row t={t} label="Base URL" value={diag.base_url||'—'}/></View>
  <NText weight="bold" style={s.h}>مدیر بله</NText><TextInput value={chatId} onChangeText={setChatId} placeholder="شناسه chat_id مدیر" placeholderTextColor={t.muted} style={s.input}/><TouchableOpacity onPress={saveChat} style={s.btn}><NText weight="bold" style={s.btnT}>ذخیره شناسه مدیر</NText></TouchableOpacity>

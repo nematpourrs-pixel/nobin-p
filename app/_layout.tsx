@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { NobinDialogProvider } from '../src/dialogs';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -11,7 +12,7 @@ export default function Layout(){
   const [loaded]=useFonts({Vazirmatn_400Regular,Vazirmatn_500Medium,Vazirmatn_600SemiBold,Vazirmatn_700Bold,Vazirmatn_800ExtraBold});
   useEffect(()=>{let active=true;(async()=>{try{if(!(await getToken())||!active)return;const j=await api('/v1/me');const g=j.user?.profile_gender;if((g==='FEMALE'||g==='MALE')&&active){const p=(await getPrefs())||defaultPrefs;await savePrefs({...p,profileGender:g,audience:g})}}catch{}})();return()=>{active=false}},[]);
   if(!loaded)return null;
-  return <SafeAreaProvider><StatusBar style="dark"/><Stack screenOptions={{headerTitleAlign:'center',headerShadowVisible:false,headerTintColor:'#394643',headerStyle:{backgroundColor:'#F8FAF9'},headerTitleStyle:{fontFamily:'Vazirmatn_600SemiBold',fontSize:16},contentStyle:{backgroundColor:'#F8FAF9'},animation:'fade',headerBackButtonDisplayMode:'minimal'}}>
+  return <SafeAreaProvider><NobinDialogProvider><StatusBar style="dark"/><Stack screenOptions={{headerTitleAlign:'center',headerShadowVisible:false,headerTintColor:'#394643',headerStyle:{backgroundColor:'#F8FAF9'},headerTitleStyle:{fontFamily:'Vazirmatn_600SemiBold',fontSize:16},contentStyle:{backgroundColor:'#F8FAF9'},animation:'fade',headerBackButtonDisplayMode:'minimal'}}>
     <Stack.Screen name="index" options={{headerShown:false,animation:'none',gestureEnabled:false}}/>
     <Stack.Screen name="onboarding" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="search" options={{headerShown:false,animation:'none',gestureEnabled:false}}/>
@@ -43,5 +44,5 @@ export default function Layout(){
     <Stack.Screen name="admin-entity" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-posts" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-system" options={{headerShown:false,animation:'fade'}}/>
-  </Stack></SafeAreaProvider>
+  </Stack></NobinDialogProvider></SafeAreaProvider>
 }

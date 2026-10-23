@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
@@ -11,8 +12,8 @@ import { NText } from '../src/ui';
 
 export default function AdminLogin(){
  const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);const[code,setCode]=useState('');const[activation,setActivation]=useState('');const[needsActivation,setNeedsActivation]=useState(false);const[busy,setBusy]=useState(false);
- const verify=async()=>{const c=code.replace(/\D/g,'');if(c.length!==6)return Alert.alert('کد ورود','کد ۶ رقمی بله را وارد کنید.');setBusy(true);try{const j=await api('/v1/auth/bale/verify',{method:'POST',body:JSON.stringify({code:c})});await setSession(j.token,j.user);try{await api('/v1/app-admin/stats');router.replace('/admin-dashboard')}catch(e:any){if(e.status===403)setNeedsActivation(true);else throw e}}catch(e:any){Alert.alert('ورود ناموفق',e.message)}finally{setBusy(false)}};
- const activate=async()=>{if(!activation.trim())return Alert.alert('کلید مدیر','کلید مدیریت سرور را وارد کنید.');setBusy(true);try{await api('/v1/app-admin/bootstrap',{method:'POST',body:JSON.stringify({admin_key:activation.trim()})});Alert.alert('فعال شد','حساب شما به مدیر سیستم ارتقا یافت.');router.replace('/admin-dashboard')}catch(e:any){Alert.alert('فعال‌سازی ناموفق',e.message)}finally{setBusy(false)}};
+ const verify=async()=>{const c=code.replace(/\D/g,'');if(c.length!==6)return nobinAlert('کد ورود','کد ۶ رقمی بله را وارد کنید.');setBusy(true);try{const j=await api('/v1/auth/bale/verify',{method:'POST',body:JSON.stringify({code:c})});await setSession(j.token,j.user);try{await api('/v1/app-admin/stats');router.replace('/admin-dashboard')}catch(e:any){if(e.status===403)setNeedsActivation(true);else throw e}}catch(e:any){nobinAlert('ورود ناموفق',e.message)}finally{setBusy(false)}};
+ const activate=async()=>{if(!activation.trim())return nobinAlert('کلید مدیر','کلید مدیریت سرور را وارد کنید.');setBusy(true);try{await api('/v1/app-admin/bootstrap',{method:'POST',body:JSON.stringify({admin_key:activation.trim()})});nobinAlert('فعال شد','حساب شما به مدیر سیستم ارتقا یافت.');router.replace('/admin-dashboard')}catch(e:any){nobinAlert('فعال‌سازی ناموفق',e.message)}finally{setBusy(false)}};
  return <SafeAreaView style={s.root}><View style={s.wrap}><View style={s.logo}><Ionicons name="shield-checkmark-outline" size={38} color={t.accent}/></View><NText weight="extra" style={s.h1}>نوبین مدیریت</NText><NText style={s.p}>اپ اختصاصی مدیر سیستم؛ کاربران، کسب‌وکارها، رزروها، نظرات، پشتیبانی، پیام‌ها و تنظیمات سامانه را از اینجا مدیریت کنید.</NText>
  <TouchableOpacity style={s.bale} onPress={()=>Linking.openURL('https://ble.ir/nobin_bot?start=login')}><Ionicons name="chatbubble-ellipses-outline" size={18} color={t.accent}/><NText weight="semi" style={s.baleT}>دریافت کد ورود از ربات بله</NText></TouchableOpacity>
  <TextInput value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6} placeholder="کد ۶ رقمی ورود" placeholderTextColor={t.muted} style={s.input}/>

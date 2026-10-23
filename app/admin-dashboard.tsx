@@ -1,3 +1,4 @@
+import { nobinAlert } from '../src/dialogs';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -37,9 +38,9 @@ const modules=[
 export default function AdminDashboard(){
  const[prefs]=usePrefs();const t=paletteFor(effectiveAudience(prefs),prefs.appearance);const s=useMemo(()=>styles(t),[prefs]);
  const[stats,setStats]=useState<any>({});const[diag,setDiag]=useState<any>({});const[busy,setBusy]=useState(false);
- const load=async()=>{setBusy(true);try{const[a,d]=await Promise.all([api('/v1/app-admin/stats'),api('/v1/app-admin/diagnostics')]);setStats(a.stats||{});setDiag(d.diagnostics||{})}catch(e:any){Alert.alert('دسترسی مدیریت',e.message)}finally{setBusy(false)}};
+ const load=async()=>{setBusy(true);try{const[a,d]=await Promise.all([api('/v1/app-admin/stats'),api('/v1/app-admin/diagnostics')]);setStats(a.stats||{});setDiag(d.diagnostics||{})}catch(e:any){nobinAlert('دسترسی مدیریت',e.message)}finally{setBusy(false)}};
  useEffect(()=>{load()},[]);
- const setWebhook=async()=>{try{await api('/v1/app-admin/bale/set-webhook',{method:'POST'});Alert.alert('انجام شد','وب‌هوک بله مجدداً تنظیم شد.')}catch(e:any){Alert.alert('خطا',e.message)}};
+ const setWebhook=async()=>{try{await api('/v1/app-admin/bale/set-webhook',{method:'POST'});nobinAlert('انجام شد','وب‌هوک بله مجدداً تنظیم شد.')}catch(e:any){nobinAlert('خطا',e.message)}};
  return <SafeAreaView edges={['bottom']} style={s.root}><ScrollView refreshControl={<RefreshControl refreshing={busy} onRefresh={load}/>} contentContainerStyle={s.wrap}>
   <InternalHeader t={t} title="مرکز مدیریت سیستم" sub="دسترسی کامل مدیر نوبین از داخل اپ" hideSupport/>
   <View style={s.hero}><View style={s.heroIcon}><Ionicons name="shield-checkmark" size={24} color="#fff"/></View><View style={{flex:1}}><NText weight="bold" style={s.heroTitle}>مدیریت نوبین</NText><NText style={s.heroSub}>{'Backend '+(diag.version||'—')+' · PHP '+(diag.php||'—')+' · '+(diag.storage_writable?'ذخیره‌سازی سالم':'بررسی ذخیره‌سازی')}</NText></View></View>
