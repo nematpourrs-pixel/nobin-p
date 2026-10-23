@@ -47,10 +47,10 @@ jobs:
         run: |
           python3 -m pip install --quiet pillow
           mkdir -p assets
-          base64 -d assets/nobin-logo-fixed.jpg.b64 > /tmp/nobin-logo-fixed.jpg
+          base64 --decode --ignore-garbage assets/nobin-logo-fixed.webp.b64 > /tmp/nobin-logo-fixed.webp
           python3 - <<'PY'
           from PIL import Image
-          im=Image.open('/tmp/nobin-logo-fixed.jpg').convert('RGB')
+          im=Image.open('/tmp/nobin-logo-fixed.webp').convert('RGB')
           im=im.resize((1024,1024),Image.Resampling.LANCZOS)
           im.save('assets/icon.png',optimize=True)
           im.save('assets/adaptive-icon.png',optimize=True)
