@@ -3,7 +3,7 @@
     "name": "نوبین",
     "slug": "nobin",
     "scheme": "nobin",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -18,7 +18,7 @@
     ],
     "android": {
       "package": "ir.nobin.app",
-      "versionCode": 20200,
+      "versionCode": 20201,
       "permissions": [],
       "softwareKeyboardLayoutMode": "resize",
       "usesCleartextTraffic": false,
