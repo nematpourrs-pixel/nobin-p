@@ -26,7 +26,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F7F2E8"
       },
-      "allowBackup": false
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro"
