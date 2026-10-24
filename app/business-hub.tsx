@@ -16,7 +16,7 @@ export default function BusinessHub(){
   ['business-info','اطلاعات کسب‌وکار','نام، مدیر، تماس، نشانی، معرفی و تصاویر','storefront-outline'],
   ['business-services','خدمات','خدمات، قیمت، مدت و نمونه‌کارها','cut-outline'],
   ['business-staff','کارکنان','پرسنل، تخصص، تصویر و خدمات اختصاصی','people-outline'],
-  ['business-calendar','تقویم کاری','شیفت‌ها، مرخصی و استثناهای شمسی','calendar-outline'],
+  ['business-calendar','تقویم کاری','نمای ماهانه و هفتگی، حضور، مرخصی و ویرایش سریع','calendar-outline'],
  ] as const;
  return <SafeAreaView edges={['bottom']} style={s.root}><ScrollView contentContainerStyle={s.wrap}><InternalHeader t={t} title={b?.name||'مدیریت کسب‌وکار'} sub="هر بخش مستقل است؛ اطلاعات را به ترتیب تکمیل کنید"/>
  <View style={s.progress}><Step n="۱" title="کسب‌وکار" done={Boolean(b?.name&&b?.city&&b?.address)} t={t}/><Step n="۲" title="خدمات" done={(b?.services||[]).length>0} t={t}/><Step n="۳" title="کارکنان" done={(b?.staff||[]).length>0} t={t}/><Step n="۴" title="تقویم" done={(b?.shifts||[]).length>0} t={t}/></View>
