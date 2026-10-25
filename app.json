@@ -3,7 +3,7 @@
     "name": "نوبین",
     "slug": "nobin",
     "scheme": "nobin",
-    "version": "2.2.6",
+    "version": "2.2.7",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -18,13 +18,13 @@
     ],
     "android": {
       "package": "ir.nobin.app",
-      "versionCode": 20206,
+      "versionCode": 20207,
       "permissions": [],
       "softwareKeyboardLayoutMode": "resize",
       "usesCleartextTraffic": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#F7F2E8"
+        "backgroundColor": "#FFFFFF"
       },
       "allowBackup": false,
       "blockedPermissions": [
