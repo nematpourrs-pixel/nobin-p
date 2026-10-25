@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../src/api';
-import { jalaliDate, jalaliShort, faNum } from '../src/dateFa';
+import { jalaliDate, jalaliShort, faNum, faDigits } from '../src/dateFa';
 import { nobinAlert } from '../src/dialogs';
 import { effectiveAudience, paletteFor } from '../src/prefs';
 import { TimeInput } from '../src/TimeInput';
@@ -48,7 +48,14 @@ const validateShifts = (ranges: Shift[]) => {
   return null;
 };
 const status = (plan: DayPlan) => plan.kind === 'closed' ? 'مرخصی / تعطیل' : plan.kind === 'special' ? 'ساعت کاری ویژه' : plan.kind === 'none' ? 'بدون شیفت' : 'شیفت معمول';
-const clock = (rs: Shift[]) => rs.map(x => x.start + ' تا ' + x.end).join('  |  ');
+const clock = (rs: Shift[]) => rs.map(x => faDigits(x.start) + ' تا ' + faDigits(x.end)).join('  |  ');
+const savedRanges = (ex: any): Shift[] => {
+  const raw = ex?.ranges_json;
+  let values: unknown = raw;
+  if (typeof raw === 'string') { try { values = JSON.parse(raw); } catch { values = []; } }
+  if (Array.isArray(values) && values.length) return values.filter(x => x && typeof x === 'object').map(x => ({ start: shortTime(x.start_time ?? x.start), end: shortTime(x.end_time ?? x.end) }));
+  return ex && Number(ex.is_working) ? [{ start: shortTime(ex.start_time), end: shortTime(ex.end_time) }] : [];
+};
 
 export default function BusinessCalendar() {
   const params = useLocalSearchParams<{ businessId: string; staffId?: string }>();
@@ -67,8 +74,7 @@ export default function BusinessCalendar() {
   const [editMode, setEditMode] = useState<EditMode>(null);
   const [weeklyRanges, setWeeklyRanges] = useState<Shift[]>([]);
   const [exWorking, setExWorking] = useState(false);
-  const [exStart, setExStart] = useState('09:00');
-  const [exEnd, setExEnd] = useState('18:00');
+  const [exRanges, setExRanges] = useState<Shift[]>([{ start: '09:00', end: '18:00' }]);
 
   const refresh = useCallback(async () => {
     const data = await api('/v1/me/businesses/' + bid);
@@ -94,7 +100,7 @@ export default function BusinessCalendar() {
     const ex = exceptions.find(x => Number(x.staff_id) === staffId && String(x.work_date || '').slice(0, 10) === key);
     if (ex) {
       if (!Number(ex.is_working)) return { kind: 'closed', ranges: [], exception: ex };
-      return { kind: 'special', ranges: [{ start: shortTime(ex.start_time), end: shortTime(ex.end_time) }], exception: ex };
+      return { kind: 'special', ranges: savedRanges(ex), exception: ex };
     }
     const weekly = shifts.filter(x => Number(x.staff_id) === staffId && Number(x.weekday) === date.getDay() && Number(x.active) !== 0);
     const fallback = shifts.filter(x => (x.staff_id === null || x.staff_id === undefined) && Number(x.weekday) === date.getDay() && Number(x.active) !== 0);
@@ -140,11 +146,13 @@ export default function BusinessCalendar() {
   const editException = () => {
     const ex = selectedPlan.exception;
     setExWorking(ex ? Number(ex.is_working) !== 0 : true);
-    setExStart(shortTime(ex?.start_time) || '09:00');
-    setExEnd(shortTime(ex?.end_time) || '18:00');
+    const defaults = ex ? savedRanges(ex) : selectedPlan.ranges;
+    setExRanges(defaults.length ? defaults.map(x => ({ ...x })) : [{ start: '09:00', end: '18:00' }]);
     setEditMode('exception');
   };
   const changeRange = (index: number, field: 'start' | 'end', value: string) => setWeeklyRanges(rs => rs.map((r, i) => i === index ? { ...r, [field]: value } : r));
+  const changeExRange = (index: number, field: 'start' | 'end', value: string) => setExRanges(rs => rs.map((r, i) => i === index ? { ...r, [field]: value } : r));
+  const addExRange = () => setExRanges(rs => rs.length >= 8 ? rs : [...rs, { start: '14:00', end: '18:00' }]);
   const saveWeekly = async () => {
     if (!staffId || saving) return;
     const error = validateShifts(weeklyRanges);
@@ -158,16 +166,27 @@ export default function BusinessCalendar() {
   };
   const saveException = async () => {
     if (!staffId || saving) return;
-    if (exWorking && (!validTime(exStart) || !validTime(exEnd) || exStart >= exEnd)) return nobinAlert('ساعت نامعتبر', 'ساعت پایان باید از ساعت شروع بزرگ‌تر باشد.');
+    const sorted = [...exRanges].sort((a, b) => a.start.localeCompare(b.start));
+    const error = exWorking ? validateShifts(sorted) : null;
+    if (error) return nobinAlert('بازه کاری نامعتبر', error);
+    if (exWorking && !sorted.length) return nobinAlert('شیفت لازم است', 'برای روز کاری حداقل یک بازه زمانی انتخاب کنید.');
     setSaving(true);
     try {
       await api('/v1/businesses/' + bid + '/schedule-exceptions', {
         method: 'POST', body: JSON.stringify({
           staff_id: staffId, date: selectedKey, is_working: exWorking,
-          start_time: exStart, end_time: exEnd, note: exWorking ? 'ساعت کاری ویژه' : 'مرخصی/تعطیلی'
+          ranges: exWorking ? sorted.map(r => ({ start_time: r.start, end_time: r.end })) : [],
+          start_time: sorted[0]?.start || '09:00', end_time: sorted[0]?.end || '18:00',
+          note: exWorking ? 'ساعت کاری ویژه' : 'مرخصی/تعطیلی'
         })
       });
-      await refresh(); resetEditor(); nobinAlert('تقویم به‌روزرسانی شد', 'برنامه ' + jalaliDate(selected) + ' ذخیره شد.');
+      const updated = await refresh();
+      const persisted = (updated?.schedule_exceptions || []).find((x: any) => Number(x.staff_id) === staffId && String(x.work_date || '').slice(0, 10) === selectedKey);
+      const verified = exWorking ? savedRanges(persisted).sort((a, b) => a.start.localeCompare(b.start)) : [];
+      if (exWorking && (verified.length !== sorted.length || verified.some((r, i) => r.start !== sorted[i].start || r.end !== sorted[i].end))) {
+        nobinAlert('نیاز به بروزرسانی سرور', 'چند شیفت این تاریخ در سرور ثبت نشده است. ابتدا بک‌اند نوبین ۱.۹.۳ را نصب کنید.'); return;
+      }
+      resetEditor(); nobinAlert('تقویم به‌روزرسانی شد', 'برنامه ' + jalaliDate(selected) + ' ذخیره شد.');
     } catch (e: any) { nobinAlert('ذخیره نشد', e.message); }
     finally { setSaving(false); }
   };
@@ -191,7 +210,7 @@ export default function BusinessCalendar() {
         <NText weight="bold" style={styles.editorTitle}>ویرایش شیفت‌های {fullDays[selectedWeekday]}</NText>
         <ActionText title="بستن" onPress={resetEditor} t={t} />
       </View>
-      <NText style={styles.hint}>این تغییر برای تمام {fullDays[selectedWeekday]}‌های آینده اعمال می‌شود، مگر روزهایی که ساعت ویژه یا مرخصی دارند.</NText>
+      <NText style={styles.hint}>این تغییر برای تمام {fullDays[selectedWeekday]}‌های آینده اعمال می‌شود، مگر روزهایی که ساعت ویژه یا مرخصی دارند. می‌توانید هر شیفت را مستقل ویرایش کنید.</NText>
       {weeklyRanges.map((r, i) => <View key={i} style={styles.shiftItem}>
         <View style={styles.rowBetween}><NText style={styles.muted}>بازه {faNum(i + 1)}</NText><ActionText title="حذف" onPress={() => setWeeklyRanges(rs => rs.filter((_, index) => index !== i))} t={t} danger /></View>
         <View style={styles.two}><View style={styles.field}><TimeInput label="شروع" value={r.start} onChange={v => changeRange(i, 'start', v)} t={t} /></View><View style={styles.field}><TimeInput label="پایان" value={r.end} onChange={v => changeRange(i, 'end', v)} t={t} /></View></View>
@@ -208,7 +227,15 @@ export default function BusinessCalendar() {
         <TouchableOpacity onPress={() => setExWorking(true)} style={[styles.modePill, exWorking && styles.modePillOn]}><Ionicons name="time-outline" size={17} color={exWorking ? '#fff' : t.accent}/><NText weight="semi" style={{ color: exWorking ? '#fff' : t.text, fontSize: 11 }}>ساعت ویژه</NText></TouchableOpacity>
         <TouchableOpacity onPress={() => setExWorking(false)} style={[styles.modePill, !exWorking && styles.modePillOn]}><Ionicons name="moon-outline" size={17} color={!exWorking ? '#fff' : t.accent}/><NText weight="semi" style={{ color: !exWorking ? '#fff' : t.text, fontSize: 11 }}>مرخصی / تعطیل</NText></TouchableOpacity>
       </View>
-      {exWorking ? <View style={styles.two}><View style={styles.field}><TimeInput label="شروع" value={exStart} onChange={setExStart} t={t}/></View><View style={styles.field}><TimeInput label="پایان" value={exEnd} onChange={setExEnd} t={t}/></View></View> : <NText style={styles.hint}>این روز در تقویم رزرو متخصص غیرفعال خواهد شد؛ رزروهای قبلی به‌طور خودکار لغو نمی‌شوند.</NText>}
+      {exWorking ? <>
+        <NText style={styles.hint}>برای این تاریخ چند شیفت مستقل می‌توانید ثبت کنید. هر شیفت را می‌توان ویرایش یا حذف کرد.</NText>
+        {exRanges.map((r, i) => <View key={i} style={styles.shiftItem}>
+          <View style={styles.rowBetween}><NText weight="semi" style={styles.editorTitle}>شیفت {faNum(i + 1)}</NText><ActionText title="حذف شیفت" onPress={() => setExRanges(rs => rs.filter((_, idx) => idx !== i))} t={t} danger/></View>
+          <View style={styles.two}><View style={styles.field}><TimeInput label="شروع" value={r.start} onChange={v => changeExRange(i, 'start', v)} t={t}/></View><View style={styles.field}><TimeInput label="پایان" value={r.end} onChange={v => changeExRange(i, 'end', v)} t={t}/></View></View>
+        </View>)}
+        <TouchableOpacity accessibilityRole="button" disabled={exRanges.length >= 8} style={[styles.secondaryButton, exRanges.length >= 8 && { opacity: .45 }]} onPress={addExRange}><Ionicons name="add-circle-outline" size={19} color={t.accent}/><NText weight="semi" style={styles.secondaryLabel}>افزودن شیفت جدید</NText></TouchableOpacity>
+        <NText style={styles.hint}>حداکثر ۸ بازه بدون تداخل برای هر تاریخ قابل ثبت است.</NText>
+      </> : <NText style={styles.hint}>این روز در تقویم رزرو متخصص غیرفعال خواهد شد؛ رزروهای قبلی به‌طور خودکار لغو نمی‌شوند.</NText>}
       <Primary title={saving ? 'در حال ثبت...' : 'ثبت برنامه این تاریخ'} disabled={saving} onPress={saveException} t={t}/>
       {selectedPlan.exception ? <TouchableOpacity onPress={removeException} style={styles.secondaryButton} disabled={saving}><Ionicons name="arrow-undo-outline" size={17} color={t.accent}/><NText weight="semi" style={styles.secondaryLabel}>حذف استثنا و بازگشت به شیفت هفتگی</NText></TouchableOpacity> : null}
     </View>

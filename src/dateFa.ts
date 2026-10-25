@@ -5,3 +5,6 @@ export function jalaliShort(value:string|Date){const d=value instanceof Date?val
 export function faTime(value:string|Date){const d=value instanceof Date?value:new Date(String(value).replace(' ','T'));if(Number.isNaN(d.getTime()))return '';return new Intl.DateTimeFormat('fa-IR',{hour:'2-digit',minute:'2-digit'}).format(d)}
 export function jalaliDateTime(value:string|Date){return `${jalaliDate(value,true)}، ساعت ${faTime(value)}`}
 export function bookingDays(count=7){return Array.from({length:count},(_,i)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+i);return{key:[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),label:i===0?'امروز':i===1?'فردا':new Intl.DateTimeFormat('fa-IR',{weekday:'long'}).format(d),date:jalaliShort(d)}})}
+
+/** UI-only formatting; API dates and times remain ASCII ISO strings. */
+export const faDigits = (value: string | number) => String(value).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]).replace(/[٠-٩]/g,d=>'۰۱۲۳۴۵۶۷۸۹'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
