@@ -12,7 +12,7 @@ import { InternalHeader, NText } from '../src/ui';
 
 const modules=[
  ['users','کاربران','people-outline','users'],
- ['businesses','کسب‌وکارها','storefront-outline','businesses'],
+
  ['staff','پرسنل','person-circle-outline','staff'],
  ['services','خدمات','cut-outline','services'],
  ['bookings','رزروها','calendar-outline','bookings'],
@@ -46,6 +46,7 @@ export default function AdminDashboard(){
   <View style={s.hero}><View style={s.heroIcon}><Ionicons name="shield-checkmark" size={24} color="#fff"/></View><View style={{flex:1}}><NText weight="bold" style={s.heroTitle}>مدیریت نوبین</NText><NText style={s.heroSub}>{'Backend '+(diag.version||'—')+' · PHP '+(diag.php||'—')+' · '+(diag.storage_writable?'ذخیره‌سازی سالم':'بررسی ذخیره‌سازی')}</NText></View></View>
   <View style={s.kpis}><Kpi t={t} n={stats.users} label="کاربر"/><Kpi t={t} n={stats.businesses} label="کسب‌وکار"/><Kpi t={t} n={stats.today_bookings} label="رزرو امروز"/><Kpi t={t} n={stats.open_support} label="پشتیبانی باز"/></View>
   <TouchableOpacity style={s.logout} onPress={async()=>{await clearSession();router.replace('/admin-login')}}><Ionicons name="log-out-outline" size={17} color={t.danger}/><NText weight="semi" style={s.logoutT}>خروج از مدیریت</NText></TouchableOpacity>
+  <TouchableOpacity style={s.hero} onPress={()=>router.push('/admin-businesses')} activeOpacity={.74}><View style={s.heroIcon}><Ionicons name="storefront-outline" size={23} color="#fff"/></View><View style={{flex:1}}><NText weight="bold" style={s.heroTitle}>بررسی و مدیریت کسب‌وکارها</NText><NText style={s.heroSub}>{new Intl.NumberFormat('fa-IR').format(Number(stats.pending_businesses||0))} درخواست منتظر تأیید · مشاهده جزئیات، ویرایش، تأیید یا رد</NText></View><Ionicons name="chevron-back" color={t.muted} size={19}/></TouchableOpacity>
   <NText weight="bold" style={s.section}>مدیریت داده‌ها</NText>
   <View style={s.grid}>{modules.map(([entity,title,icon,key])=><TouchableOpacity key={entity} activeOpacity={.75} style={s.tile} onPress={()=>router.push({pathname:'/admin-entity',params:{entity}})}><View style={s.tileIcon}><Ionicons name={icon as any} size={21} color={t.accent}/></View><NText weight="semi" style={s.tileTitle}>{title}</NText><NText style={s.tileNum}>{new Intl.NumberFormat('fa-IR').format(Number(stats[key]||0))} رکورد</NText></TouchableOpacity>)}</View>
   <NText weight="bold" style={s.section}>عملیات مدیریتی</NText>
