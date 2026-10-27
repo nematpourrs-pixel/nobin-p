@@ -41,6 +41,7 @@ export default function Layout(){
     <Stack.Screen name="admin-login" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-support" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-dashboard" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="admin-reports" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-businesses" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-entity" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-posts" options={{headerShown:false,animation:'fade'}}/>
