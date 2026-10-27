@@ -38,6 +38,7 @@ export default function Layout(){
     <Stack.Screen name="support" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="review" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="follows" options={{headerShown:false,animation:'fade'}}/>
+    <Stack.Screen name="magic-login" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-login" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-support" options={{headerShown:false,animation:'fade'}}/>
     <Stack.Screen name="admin-dashboard" options={{headerShown:false,animation:'fade'}}/>
