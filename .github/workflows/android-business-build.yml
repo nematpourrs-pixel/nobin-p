@@ -1,0 +1,115 @@
+name: Android Business Build
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/trigger/business-build'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_PUBLIC_NOBIN_BUSINESS_APP: "1"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Prepare admin app identity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          p='app.json'
+          j=json.load(open(p,encoding='utf-8'))
+          e=j['expo']
+          e['name']='نوبین کسب‌وکار'
+          e['slug']='nobin-business'
+          e['scheme']='nobinbiz'
+          e['version']='1.0.0'
+          e['android']['package']='ir.nobin.business'
+          e['android']['versionCode']=10000
+          e['extra']={**e.get('extra',{}),'businessApp':True,'market':'CAFE_BAZAAR'}
+          open(p,'w',encoding='utf-8').write(json.dumps(j,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: Restore fixed Nobin logo
+        shell: bash
+        run: |
+          python3 -m pip install --quiet pillow
+          mkdir -p assets
+          base64 --decode assets/nobin-logo-fixed.webp.b64 > /tmp/nobin-logo-fixed.webp
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          p=Path('/tmp/nobin-logo-fixed.webp')
+          with Image.open(p) as check: check.verify()
+          source=Image.open(p).convert('RGBA')
+          # Ordinary icon: full approved artwork, no crop.
+          normal=Image.new('RGB',(1024,1024),(247,242,232))
+          regular=source.resize((860,860),Image.Resampling.LANCZOS).convert('RGB')
+          normal.paste(regular,(82,82))
+          normal.save('assets/icon.png',optimize=True)
+          # Adaptive-icon masks may be circular: whole square remains in the
+          # guaranteed safe circle (corner radius 440/sqrt(2) < 1024*33/108).
+          adaptive=Image.new('RGBA',(1024,1024),(0,0,0,0))
+          art=source.resize((440,440),Image.Resampling.LANCZOS)
+          adaptive.alpha_composite(art,(292,292))
+          adaptive.save('assets/adaptive-icon.png',optimize=True)
+          PY
+          sha256sum assets/icon.png assets/adaptive-icon.png
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Validate Expo bundle
+        run: npx expo export --platform android --output-dir /tmp/nobin-business-export
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android --clean --no-install
+      - name: Disable debug signing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/build.gradle'); s=p.read_text()
+          i=s.find('release {')
+          if i<0: raise SystemExit('release block not found')
+          j=s.find('signingConfig signingConfigs.debug',i)
+          if j>=0: s=s[:j]+'signingConfig null'+s[j+len('signingConfig signingConfigs.debug'):]
+          rel=s.find('release {')
+          if rel>=0 and "debugSymbolLevel 'none'" not in s[rel:rel+1200]:
+              brace=s.find('{',rel)+1; s=s[:brace]+"\n            ndk { debugSymbolLevel 'none' }"+s[brace:]
+          p.write_text(s)
+          gp=Path('android/gradle.properties'); gs=gp.read_text() if gp.exists() else ''
+          lines=[x for x in gs.splitlines() if not x.startswith('reactNativeArchitectures=')]
+          lines.append('reactNativeArchitectures=armeabi-v7a,arm64-v8a')
+          gp.write_text('\n'.join(lines)+'\n')
+          PY
+      - name: Build unsigned business APK and AAB
+        working-directory: android
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8 -Dorg.gradle.workers.max=2"
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace --no-daemon --max-workers=2
+          ./gradlew bundleRelease --stacktrace --no-daemon --max-workers=2
+      - name: Collect outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-output
+          find android/app/build/outputs -type f \( -name '*.apk' -o -name '*.aab' \) -print -exec cp {} release-output/ \;
+          ls -lah release-output
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nobin-business-android-unsigned
+          path: release-output
+          if-no-files-found: error
+          retention-days: 7
