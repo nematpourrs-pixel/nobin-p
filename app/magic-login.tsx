@@ -12,7 +12,8 @@ import { NText } from '../src/ui';
 export default function MagicLogin(){
  const params=useLocalSearchParams<{ticket?:string;target?:string}>();
  const adminMode=process.env.EXPO_PUBLIC_NOBIN_ADMIN_APP==='1';
- const expected=adminMode?'admin-app':'user-app';
+ const businessMode=process.env.EXPO_PUBLIC_NOBIN_BUSINESS_APP==='1';
+ const expected=adminMode?'admin-app':businessMode?'business-app':'user-app';
  const ticket=String(params.ticket||'');const target=String(params.target||'');
  const t=paletteFor('ALL');const s=useMemo(()=>StyleSheet.create({
  root:{flex:1,backgroundColor:t.bg},wrap:{flex:1,justifyContent:'center',padding:24,gap:15},
@@ -34,6 +35,8 @@ export default function MagicLogin(){
      if(adminMode){
        try{await api('/v1/app-admin/stats')}catch(e:any){throw new Error('مجوز مدیریت سیستم تأیید نشد.');}
        router.replace('/admin-dashboard');
+     }else if(businessMode){
+       try { await api('/v1/me/businesses'); router.replace('/business-workspace'); } catch(e:any) { throw new Error('مجوز و اطلاعات مدیریت کسب‌وکار تأیید نشد.'); }
      }else{
        const g=d.user?.profile_gender;
        const audience=g==='MALE'||g==='FEMALE'?g:d.user?.service_audience||'ALL';
