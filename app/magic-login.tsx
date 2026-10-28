@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../src/api';
 import { API_BASE } from '../src/api';
 import { defaultPrefs, paletteFor } from '../src/prefs';
-import { savePrefs, setSession } from '../src/session';
+import { clearSession, savePrefs, setSession } from '../src/session';
 import { NText } from '../src/ui';
 
 export default function MagicLogin(){
@@ -40,9 +40,10 @@ export default function MagicLogin(){
        await savePrefs({...defaultPrefs,profileGender:g==='MALE'||g==='FEMALE'?g:'UNSPECIFIED',audience});
        router.replace('/');
      }
-   }catch(e:any){setError(e.message||'اتصال با سرور برقرار نشد.');}
+   }catch(e:any){await clearSession();setError(e.message||'اتصال با سرور برقرار نشد.');}
    finally{setWorking(false);}
  };
+ useEffect(()=>{if(valid){void finish();}},[valid,ticket,target]);
  return <SafeAreaView edges={['top','bottom']} style={s.root}><View style={s.wrap}>
   <View style={s.symbol}><Ionicons name="shield-checkmark-outline" size={39} color={t.accent}/></View>
   <NText weight="bold" style={s.title}>ورود امن به نوبین</NText>
