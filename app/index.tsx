@@ -15,13 +15,14 @@ const fa=(n:number)=>new Intl.NumberFormat('fa-IR').format(n);
 
 export default function Home(){
   const adminMode=process.env.EXPO_PUBLIC_NOBIN_ADMIN_APP==='1';
+  const businessMode=process.env.EXPO_PUBLIC_NOBIN_BUSINESS_APP==='1';
   const[q,setQ]=useState('');const[prefs]=usePrefs();const[rows,setRows]=useState<Salon[]>([]);const[followStats,setFollowStats]=useState({following:0,followers:0});const audience=effectiveAudience(prefs);const t=paletteFor(audience,prefs.appearance);const s=useMemo(()=>styles(t,prefs.density),[audience,prefs.appearance,prefs.density]);
-  useEffect(()=>{if(adminMode){router.replace('/admin-login');return;}void trackFirstPartyInstall();getPrefs().then(p=>{if(!p)router.replace('/onboarding')})},[adminMode]);
+  useEffect(()=>{if(adminMode){router.replace('/admin-login');return;}if(businessMode){router.replace('/business-workspace');return;}void trackFirstPartyInstall();getPrefs().then(p=>{if(!p)router.replace('/onboarding')})},[adminMode]);
   useEffect(()=>{let on=true;const g=audience==='ALL'?'':`&gender=${audience}`;const qq=prefs.preferredCity||prefs.preferredProvince;const loc=qq?`&q=${encodeURIComponent(qq)}`:'';apiCached(`/v1/businesses?limit=3${g}${loc}`,180000).then(j=>{if(on)setRows(Array.isArray(j?.items)?j.items.map(salonCard):[])}).catch(()=>{});return()=>{on=false}},[audience,prefs.preferredProvince,prefs.preferredCity]);
   useEffect(()=>{let on=true;(async()=>{try{const f=await apiCached('/v1/me/following',60000);const b=await apiCached('/v1/me/businesses',60000);let total=0;for(const x of (b.items||[]).filter((z:any)=>z.status==='APPROVED')){try{const r=await apiCached('/v1/businesses/'+x.id+'/followers',60000);total+=(r.items||[]).length}catch{}}if(on)setFollowStats({following:(f.items||[]).length,followers:total})}catch{}})();return()=>{on=false}},[]);
   const cats=categoriesFor(audience);
   const go=()=>router.push({pathname:'/search',params:{q,audience}});
-  if(adminMode)return <SafeAreaView edges={['top']} style={s.root}/>;
+  if(adminMode||businessMode)return <SafeAreaView edges={['top']} style={s.root}/>;
   return <SafeAreaView edges={['top']} style={s.root}>
     <ScrollView contentContainerStyle={s.wrap} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
       <View style={s.top}><SupportButton t={t}/><View style={{alignItems:'flex-end'}}><NText weight="extra" style={s.brand}>نوبین</NText><NText style={s.sub}>زیبایی و آراستگی، ساده و مطمئن</NText></View></View>
