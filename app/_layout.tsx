@@ -25,6 +25,8 @@ export default function Layout(){
     <Stack.Screen name="assistant" options={{title:'دستیار نوبین',animation:'fade'}}/>
     <Stack.Screen name="business/[id]" options={{title:'',animation:'fade'}}/>
     <Stack.Screen name="booking" options={{title:'رزرو نوبت',animation:'fade'}}/>
+    <Stack.Screen name="business-workspace" options={{headerShown:false,animation:"fade"}}/>
+    <Stack.Screen name="business-operations" options={{headerShown:false,animation:"fade"}}/>
     <Stack.Screen name="business-dashboard" options={{title:'مدیریت کسب‌وکار',animation:'fade'}}/>
     <Stack.Screen name="business-register" options={{title:'راه‌اندازی کسب‌وکار',animation:'fade'}}/>
     <Stack.Screen name="business-manage" options={{title:'مدیریت کسب‌وکار',animation:'fade'}}/>
