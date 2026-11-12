@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getToken } from './session';
-const base=(process.env.EXPO_PUBLIC_API_URL||'https://picamo.ir/nobin_api').replace(/\/$/,'');
+const base=(process.env.EXPO_PUBLIC_API_URL||'https://picamo.ir/nobin/api').replace(/\/$/,'');
 export const API_BASE=base;
 export const hasApi=Boolean(base);
 const CACHE_PREFIX='nobin_api_cache_v1:';
