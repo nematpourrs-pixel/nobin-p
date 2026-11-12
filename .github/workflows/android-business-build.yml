@@ -36,9 +36,9 @@ jobs:
           e['name']='نوبین کسب‌وکار'
           e['slug']='nobin-business'
           e['scheme']='nobinbiz'
-          e['version']='1.0.0'
+          e['version']='1.0.1'
           e['android']['package']='ir.nobin.business'
-          e['android']['versionCode']=10000
+          e['android']['versionCode']=10001
           e['extra']={**e.get('extra',{}),'businessApp':True,'market':'CAFE_BAZAAR'}
           open(p,'w',encoding='utf-8').write(json.dumps(j,ensure_ascii=False,indent=2)+'\n')
           PY
