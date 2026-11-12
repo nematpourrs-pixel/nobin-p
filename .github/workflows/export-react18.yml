@@ -1,0 +1,34 @@
+name: Export React 18 UMD for self-hosted Nobin
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/trigger/react18-build'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install self-contained production React 18 runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nobin-react18
+          cd /tmp/nobin-react18
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund --ignore-scripts --save-exact react@18.3.1 react-dom@18.3.1
+          mkdir -p "$GITHUB_WORKSPACE/react18-dist"
+          cp node_modules/react/umd/react.production.min.js "$GITHUB_WORKSPACE/react18-dist/react.production.min.js"
+          cp node_modules/react-dom/umd/react-dom.production.min.js "$GITHUB_WORKSPACE/react18-dist/react-dom.production.min.js"
+          wc -c "$GITHUB_WORKSPACE"/react18-dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nobin-react18-runtime
+          path: react18-dist/
+          retention-days: 7
